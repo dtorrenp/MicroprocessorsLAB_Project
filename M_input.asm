@@ -19,6 +19,15 @@ sampling
    call	    MIC_output
    bra	    sampling
    
+sound_clip_1_sec
+   movlw    .32
+   call	    LCD_delay_x4us
+   call	    ADC_Read
+   movff	ADRESL,output_lower
+   movff	ADRESH,output_upper
+   
+   
+   
 MIC_output
     movff	ADRESL,output_lower
     movff	ADRESH,output_upper
