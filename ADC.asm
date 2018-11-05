@@ -32,7 +32,7 @@ add_check_setup
     movwf	input_two_upper
     
     
-    movlw	0xFF
+    movlw	0xFE
     movwf	input_one_lower
     movlw	0xFF
     movwf	input_one_upper
