@@ -39,9 +39,6 @@ start
 	call    ADC_Read
 	call	ADC_convert
 	movlw	.255
-	call	LCD_delay_ms
-	call	LCD_delay_ms
-	call	LCD_delay_ms
 	call	LCD_clear
 	bra	start
 	
