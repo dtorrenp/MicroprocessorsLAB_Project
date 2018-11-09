@@ -4,6 +4,7 @@
 	extern	UART_Setup, UART_Transmit_Message  ; external UART subroutines
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read
+	extern	sampling,serial_output_setup
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable
@@ -28,19 +29,19 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	call	UART_Setup	; setup UART
 	call	LCD_Setup	; setup LCD
 	call	ADC_Setup	; setup ADC
-	call	LCD_move
-	call	Pad_Setup
-	call	add_check_setup
-	
+	call	LCD_move	; moves LCD  if wanted, not set currently 
+	call	Pad_Setup	; setup keypad entry
+	call	serial_output_setup ; setup the serial data tranfer for DAC
 	goto	start
 	
 	; ******* Main programme ****************************************
-start 	
-	call    ADC_Read
-	call	ADC_convert
-	movlw	.255
-	call	LCD_clear
-	bra	start
+start 	call	sampling	;call subroutine to take mic input
+	;call	LCD_clear
+	bra	start	    
+	
+	call    ADC_Read	;read  ADC
+	call	ADC_convert	;convert ADC to decimal and output to LCD
+	call	LCD_clear	;clears the LCD
 	
 	call	Pad_Read
 	movwf	PORTH

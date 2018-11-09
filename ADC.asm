@@ -40,7 +40,7 @@ add_check_setup
     movwf	input_one_super
     return
     
-eight_bit_by_sixteen
+eight_bit_by_sixteen		    ;multiplies sixteen bit number by an 8 bit
     movf  input_one_lower,W
     mulwf input_two_lower
     movff PRODL,result_lower
@@ -62,7 +62,7 @@ eight_bit_by_sixteen
     
     return
     
-sixteen_bit_by_sixteen
+sixteen_bit_by_sixteen		;multiplies two sixteen bit numbers
     movf  input_one_lower,W	;moving lower bit one into w
     mulwf input_two_lower	;multiplying lower bytes of both
     movff PRODL,result_lower	;moving lowest byte result into file
@@ -102,7 +102,7 @@ sixteen_bit_by_sixteen
     
     return
     
-eight_bit_by_twentyfour
+eight_bit_by_twentyfour		;multiplies an 8 bit number by a 24 bit
     
     movf  input_one_lower,W
     mulwf input_two_lower
@@ -132,7 +132,7 @@ eight_bit_by_twentyfour
     
     return
     
-ADC_convert
+ADC_convert	;converts hex into decimal n=by returning ASCII character for display on LCD
     movff	ADRESL,input_one_lower
     movff	ADRESH,input_one_upper
     
@@ -194,7 +194,7 @@ ADC_convert
     return
 
 
-ADC_compare
+ADC_compare	;used to find the decimal number by comparing hex character with known values and returning ASCII
 com_0
     movlw	0x00
     cpfseq	result_super
