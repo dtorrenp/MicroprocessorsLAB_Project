@@ -5,19 +5,22 @@
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read
 	
-	global serial_output,MIC_output, sampling,serial_output_setup
+	global serial_output,MIC_output, sampling, serial_output_setup, store_input_setup
 	
 acs0	udata_acs   ; reserve data space in access ram
 output_lower	    res 1   ; reserve one byte 
 output_upper	    res 1   ; reserve one byte
 transmit_upper	    res 1
 transmit_lower	    res 1
-inbetween1	    res 1	    
+inbetween1	    res 1
+storage_low	    res 1
+storage_high	    res 1
+storage_highest	    res 1
+	   
 	
 MIC    code
    
 serial_output_setup	    ;setup of serial output
-    clrf    TRISC	    ;setting PORTC as an output for reference
     bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
     bsf	    PORTD, RD2	    ;setting bit to prevent shutdown of DAC
     bcf	    PORTD, RD1	    ;clearing bit for sychronisatio input
@@ -33,9 +36,15 @@ serial_output_setup	    ;setup of serial output
     
 store_input_setup	    ;setup of serial output
     bsf		PORTE, RE1  ;set cs pin high so cant write
-    bcf		PORTA, RA4  ;set WP pin on, write protect on
+    bsf		PORTA, RA4  ;set WP pin on, write protect on
     bsf		PORTC, RC2  ;set hold pin off so doesnt hold
 	
+    movlw	0x00
+    movwf	storage_high
+    movwf	storage_highest
+    movlw	0x01
+    movwf	storage_low
+    
     bcf SSP1STAT, CKE	    
     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
     movlw (1<<SSPEN)|(1<<CKP)|(0x02)
@@ -51,16 +60,45 @@ sampling
    call	    MIC_output
    return
    
-input_store
+Input_store
    bcf		PORTE, RE1  ;set cs pin low to actove so can write
-   bsf		PORTA, RA4  ;set WP pin off, write protect off
-   bsf		PORTC, RC2  ;set hold pin off so doesnt hold
    
+   movlw	0x02
+   call		SPI_MasterTransmitInput
+   movf		storage_highest, W
+   call		SPI_MasterTransmitInput
+   movf		storage_high, W
+   call		SPI_MasterTransmitInput
+   movf		storage_low, W
+   call		SPI_MasterTransmitInput
+   
+   movf		output_upper, W
+   call		SPI_MasterTransmitInput
+   movf		output_lower, W
+   call		SPI_MasterTransmitInput
+   
+   bsf	PORTE, RE1  ;set cs pin high to inactive so cant write
+   
+inc_low   
+   infsnz	storage_low, f	    ;increment number in lowest byte
+   bra		inc_high	    ;if not zero it will return else increment next byte
+   return
+   
+inc_high
+   infsnz	storage_high, f	    ;increment number in middle byte
+   bra		inc_highest	    ;if not zero it will return else increment next byte
+   return
+
+inc_highest   
+   infsnz	storage_highest, f  ;increment number in highest byte and return
+   retlw	0xFF
+   return
+  
    
 MIC_output
     movff	ADRESL,output_lower
     movff	ADRESH,output_upper
-    movff       output_upper,PORTC ;put upper byte of signal into PORTC for ref
+    ;movff       output_upper,PORTC ;put upper byte of signal into PORTC for ref
     
 serial_output
     bcf	    PORTD, RD0		;clear RD0/chip select so can write data
@@ -96,4 +134,13 @@ Wait_Transmit ; Wait for transmission to complete
    
     return
 
+SPI_MasterTransmitInput ; Start transmission of data (held in W)
+    movwf SSP1BUF
+Wait_TransmitInput ; Wait for transmission to complete
+    btfss PIR1, SSP1IF
+    bra Wait_Transmit
+    bcf PIR1, SSP1IF ; clear interrupt flag
+    
+    return
+    
     end

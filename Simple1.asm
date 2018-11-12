@@ -2,9 +2,9 @@
 
 	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
 	extern	UART_Setup, UART_Transmit_Message  ; external UART subroutines
-	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright	; external LCD subroutines
+	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright, LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read
-	extern	sampling,serial_output_setup
+	extern	sampling,serial_output_setup, store_input_setup
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable
@@ -32,11 +32,11 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	call	LCD_move	; moves LCD  if wanted, not set currently 
 	call	Pad_Setup	; setup keypad entry
 	call	serial_output_setup ; setup the serial data tranfer for DAC
+	call	store_input_setup;setup code to store mic input
 	goto	start
 	
 	; ******* Main programme ****************************************
-start 	call	sampling	;call subroutine to take mic input
-	;call	LCD_clear
+start 	call	pad_read	;call subroutine to take mic input
 	bra	start	    
 	
 	call    ADC_Read	;read  ADC
