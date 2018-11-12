@@ -31,11 +31,31 @@ serial_output_setup	    ;setup of serial output
     bcf TRISD, SCK2
     return
     
+store_input_setup	    ;setup of serial output
+    bsf		PORTE, RE1  ;set cs pin high so cant write
+    bcf		PORTA, RA4  ;set WP pin on, write protect on
+    bsf		PORTC, RC2  ;set hold pin off so doesnt hold
+	
+    bcf SSP1STAT, CKE	    
+    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
+    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
+    movwf SSP1CON1
+    ; SDO2 output; SCK2 output
+    bcf TRISC, SDI1
+    bcf TRISC, SCK1
+    return
+    
 sampling   
    call	    ADC_Read	    ;read input from ADC into two ADRES registers
   ;call	    ADC_convert	    ;convert ADRES input into decimal and output to LCD
    call	    MIC_output
    return
+   
+input_store
+   bcf		PORTE, RE1  ;set cs pin low to actove so can write
+   bsf		PORTA, RA4  ;set WP pin off, write protect off
+   bsf		PORTC, RC2  ;set hold pin off so doesnt hold
+   
    
 MIC_output
     movff	ADRESL,output_lower
