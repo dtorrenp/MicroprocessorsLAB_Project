@@ -42,7 +42,7 @@ Pad_Read
  
     movlw   b'11101110'		    
     cpfseq  pad_final			
-    return  
+    retlw   0x01
 
     call    Input_Store
     call    sampling_delay
@@ -50,7 +50,7 @@ Pad_Read
     movlw   b'11111111'		    
     cpfseq  pad_final
     bra	    Pad_Read
-    return
+    retlw   0xFF
  
     
 PAD_delay_x4us			; delay given in chunks of 4 microsecond in W

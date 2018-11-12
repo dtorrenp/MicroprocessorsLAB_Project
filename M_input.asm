@@ -143,4 +143,11 @@ Wait_TransmitInput ; Wait for transmission to complete
     
     return
     
+input_check
+    movwf   pad_response
+    movlw   0x01
+    cpfseq  pad_response
+    call    Output_Storage
+    return
+    
     end

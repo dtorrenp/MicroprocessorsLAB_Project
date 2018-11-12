@@ -37,6 +37,7 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start 	call	pad_read	;call subroutine to take mic input
+	call	input_check
 	bra	start	    
 	
 	call    ADC_Read	;read  ADC
