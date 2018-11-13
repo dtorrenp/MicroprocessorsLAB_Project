@@ -1,7 +1,7 @@
 #include p18f87k22.inc
     
     global Pad_Setup, Pad_Read
-    extern  LCD_clear
+    extern  LCD_clear, Input_store
     
 acs0    udata_acs   ; named variables in access ram
 PAD_cnt_l   res 1   ; reserve 1 byte for variable PAD_cnt_l
@@ -40,11 +40,12 @@ Pad_Read
     iorwf   pad_column, W
     movwf   pad_final
  
+Pad_Check
     movlw   b'11101110'		    
     cpfseq  pad_final			
     retlw   0x01
 
-    call    Input_Store
+    call    Input_store
     call    sampling_delay
     
     movlw   b'11111111'		    
