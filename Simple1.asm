@@ -38,7 +38,9 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start 	call	MIC_straight_output
-	call	Input_store
+	;call    Pad_Check
+	
+	;call	Input_store
 	;call	ADC_convert
 	;call	LCD_clear
 	bra	start	    

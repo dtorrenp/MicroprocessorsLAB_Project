@@ -6,6 +6,7 @@
 	extern	Pad_Setup, Pad_Read
 	
 	global	Input_store, Store_Input_Setup
+	global  storage_low,storage_high,storage_highest,first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest  
 	
 acs0	udata_acs   ; reserve data space in access ram
 storage_low	    res 1
@@ -13,6 +14,13 @@ storage_high	    res 1
 storage_highest	    res 1
 input_lower	    res 1
 input_upper	    res 1 
+	    
+first_storage_low   res 1 	    
+first_storage_high	res 1     
+first_storage_highest	res 1     
+last_storage_low   res 1 	    
+last_storage_high	res 1     
+last_storage_highest	res 1  	    
 
 MIC    code
     
@@ -26,6 +34,12 @@ Store_Input_Setup	    ;setup of serial output
     movwf	storage_highest
     movlw	0x01
     movwf	storage_low
+    
+    movlw	0x00
+    movwf	first_storage_high
+    movwf	first_storage_highest
+    movlw	0x01
+    movwf	first_storage_low
     
     bcf SSP1STAT, CKE	    
     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
@@ -58,8 +72,11 @@ Input_store
    call		SPI_MasterTransmitInput
    
    bsf	PORTE, RE1  ;set cs pin high to inactive so cant write
-   
-inc_low   
+   call		increment_file	    ;have to increment file  number twice as two bytes written
+   call		increment_file
+   return
+  
+increment_file   
    infsnz	storage_low, f	    ;increment number in lowest byte
    bra		inc_high	    ;if not zero it will return else increment next byte
    return
@@ -82,11 +99,5 @@ Wait_TransmitInput ; Wait for transmission to complete
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
     
-;Input_check
-    ;movwf   pad_response
-    ;movlw   0x01
-    ;cpfseq  pad_response
-    ;call    Output_Storage
-    ;return
     
     end

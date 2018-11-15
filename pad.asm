@@ -1,7 +1,9 @@
 #include p18f87k22.inc
     
-    global Pad_Setup, Pad_Read
+    global Pad_Setup, Pad_Read, sampling_delay
     extern  LCD_clear, Input_store
+    extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
+    extern  Output_Storage
     
 acs0    udata_acs   ; named variables in access ram
 PAD_cnt_l   res 1   ; reserve 1 byte for variable PAD_cnt_l
@@ -12,6 +14,7 @@ PAD_counter res 1   ; reserve 1 byte for counting through nessage
 pad_row res 1
 pad_column res 1
 pad_final res 1
+button_pressed	res 1
 
 pad	    code
 
@@ -24,7 +27,7 @@ Pad_Setup
     movlw   .10
     call    PAD_delay_x4us
     return
-    
+
 Pad_Read
     movlw   0x0F
     movwf   TRISH, A
@@ -39,20 +42,31 @@ Pad_Read
     movf    pad_row,W
     iorwf   pad_column, W
     movwf   pad_final
- 
+    return
+    
 Pad_Check
+    call    Pad_Read
+    movlw   b'11111111'		    
+    cpfslt  pad_final
+    return
+    
     movlw   b'11101110'		    
     cpfseq  pad_final			
-    retlw   0x01
-
+    bra	    check_if_out
     call    Input_store
-    call    sampling_delay
+    movlw   0x01
+    movwf   button_pressed
+    return
     
-    movlw   b'11111111'		    
+check_if_out
+    movlw   b'11101101'
     cpfseq  pad_final
-    bra	    Pad_Read
-    retlw   0xFF
- 
+    return
+    
+    call    Output_Storage
+    movlw   0x02
+    movwf   button_pressed
+    return
     
 PAD_delay_x4us			; delay given in chunks of 4 microsecond in W
     movwf	PAD_cnt_l	; now need to multiply by 16
@@ -74,5 +88,8 @@ PADlp1
     return			; carry reset so return
     
 sampling_delay
+    movlw      .31
+    call	PAD_delay_x4us
+    return
     
     end

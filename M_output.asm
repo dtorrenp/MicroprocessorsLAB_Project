@@ -4,8 +4,10 @@
 	extern	UART_Setup, UART_Transmit_Message  ; external UART subroutines
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read
-
-	global	Serial_Output_Setup, MIC_straight_output
+	
+	extern first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest 
+	
+	global	Serial_Output_Setup, MIC_straight_output, Output_Storage
 	
 acs0	udata_acs   ; reserve data space in access ram
 output_lower	    res 1   ; reserve one byte 
@@ -31,6 +33,12 @@ Serial_Output_Setup	    ;setup of serial output
     bcf TRISD, SCK2
     return 
 
+Storage_Output_setup
+    ;movff first_storage_highest,output_storage_highest
+    ;movff first_storage_high,output_storage_high
+    ;movff first_storage_low,output_storage_low
+    return
+    
 MIC_straight_output
     call	ADC_Read
     movff	ADRESL,output_lower
@@ -58,24 +66,42 @@ Wait_Transmit ; Wait for transmission to complete
     bra Wait_Transmit
     bcf PIR2, SSP2IF ; clear interrupt flag
     return
+    
+SPI_MasterTransmitStore ; Start transmission of data (held in W)
+    movwf SSP1BUF
+Wait_TransmitStore ; Wait for transmission to complete
+    btfss PIR1, SSP1IF
+    bra Wait_TransmitStore
+    bcf PIR1, SSP1IF ; clear interrupt flag
+    return
 
 Output_Storage    
-   bcf		PORTE, RE1  ;set cs pin low to active so can write
+   bcf		PORTD, RD0		;clear RD0/chip select so can write data
+   bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
    
-   movlw	0x03
-   call		SPI_MasterTransmit
-   movf		storage_highest, W
-   call		SPI_MasterTransmit
-   movf		storage_high, W
-   call		SPI_MasterTransmit
-   movf		storage_low, W
-   call		SPI_MasterTransmit
+   movlw	0x03	    ;op code for reading FRAM
+   call		SPI_MasterTransmitStore
+   ;movf		output_storage_highest, W
+   call		SPI_MasterTransmitStore
+   ;movf		output_storage_high, W
+   call		SPI_MasterTransmitStore
+   ;movf		output_storage_low, W
+   call		SPI_MasterTransmitStore
    
-   movff	RC4, output_lower	   ;want to move serial stored output into 
-		    ;output_lower and uppper to allow transfer to DAC properly
-   call		Serial_Output
    
-   bsf	PORTE, RE1  ;set cs pin high to inactive so cant write
+   
+   bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
+   bsf		PORTD, RD0		;clear RD0/chip select so can write data
+    
+    
+    movlw   0x50
+    iorwf   output_upper, W
+    call    SPI_MasterTransmit	;transmit byte
+    
+    movf    output_lower, W
+    call    SPI_MasterTransmit	
+    
+    bsf	    PORTD, RD0		;set chip select to stop write
    
 inc_low   
    infsnz	storage_low, f	    ;increment number in lowest byte
