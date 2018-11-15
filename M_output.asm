@@ -22,6 +22,8 @@ storage_highest	    res 1
 MicOutput CODE                      ; let linker place main program
 
 Serial_Output_Setup	    ;setup of serial output
+    movlw   0x00
+    movwf   TRISD
     bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
 	
     bcf SSP2STAT, CKE	    
