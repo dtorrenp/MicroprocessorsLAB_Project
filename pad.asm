@@ -1,6 +1,6 @@
 #include p18f87k22.inc
     
-    global Pad_Setup, Pad_Read, sampling_delay
+    global Pad_Setup, Pad_Read, sampling_delay, Pad_Check
     extern  LCD_clear, Input_store
     extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
     extern  Output_Storage
@@ -20,28 +20,31 @@ pad	    code
 
 Pad_Setup
     banksel PADCFG1
-    bsf	    PADCFG1,REPU, BANKED
-    clrf    LATH
+    bsf	    PADCFG1, RJPU, BANKED
+    clrf    LATJ
     movlw   0x0F
-    movwf   TRISH, A
+    movwf   TRISJ, A
     movlw   .10
     call    PAD_delay_x4us
     return
 
 Pad_Read
     movlw   0x0F
-    movwf   TRISH, A
+    movwf   TRISJ, A
     movlw   .10
     call    PAD_delay_x4us
-    movff   PORTH, pad_row
+    movff   PORTJ, pad_row
     movlw   0xF0
-    movwf   TRISH, A
+    movwf   TRISJ, A
     movlw   .10
     call    PAD_delay_x4us
-    movff   PORTH, pad_column
+    movff   PORTJ, pad_column
     movf    pad_row,W
     iorwf   pad_column, W
     movwf   pad_final
+    movlw   0x00    
+    movwf   TRISF
+    movff   pad_final, PORTF
     return
     
 Pad_Check
@@ -50,7 +53,7 @@ Pad_Check
     cpfslt  pad_final
     return
     
-    movlw   b'11101110'		    
+    movlw   b'01110111'		    
     cpfseq  pad_final			
     bra	    check_if_out
     call    Input_store
@@ -59,7 +62,7 @@ Pad_Check
     return
     
 check_if_out
-    movlw   b'11101101'
+    movlw   b'10110111'
     cpfseq  pad_final
     return
     

@@ -24,8 +24,15 @@ MicOutput CODE                      ; let linker place main program
 Serial_Output_Setup	    ;setup of serial output
     movlw   0x00
     movwf   TRISD
+    movwf   TRISE
     bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
-	
+    
+    movlw	0x00
+    movwf	storage_high
+    movwf	storage_highest
+    movlw	0x01
+    movwf	storage_low
+    
     bcf SSP2STAT, CKE	    
     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
     movlw (1<<SSPEN)|(1<<CKP)|(0x02)
@@ -33,6 +40,14 @@ Serial_Output_Setup	    ;setup of serial output
     ; SDO2 output; SCK2 output
     bcf TRISD, SDO2
     bcf TRISD, SCK2
+    
+    bcf SSP1STAT, CKE	    
+    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
+    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
+    movwf SSP1CON1
+    ; SDO2 output; SCK2 output
+    bcf TRISC, SDO1
+    bcf TRISC, SCK1
     return 
 
 Storage_Output_setup
@@ -78,34 +93,43 @@ Wait_TransmitStore ; Wait for transmission to complete
     return
 
 Output_Storage    
-   bcf		PORTD, RD0		;clear RD0/chip select so can write data
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
+   bsf		TRISC, RC5 
    
    movlw	0x03	    ;op code for reading FRAM
    call		SPI_MasterTransmitStore
-   ;movf		output_storage_highest, W
+   movlw	storage_highest
    call		SPI_MasterTransmitStore
-   ;movf		output_storage_high, W
+   movlw	storage_high
    call		SPI_MasterTransmitStore
-   ;movf		output_storage_low, W
+   movlw	storage_low
    call		SPI_MasterTransmitStore
    
+   movlw	0x00
+   call		SPI_MasterTransmitStore
+   movff	SSP1BUF, output_upper
+   movlw	0x00
+   call		SPI_MasterTransmitStore
+   movff	SSP1BUF, output_upper
    
+   call		Increment
+   call		Increment
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
-   bsf		PORTD, RD0		;clear RD0/chip select so can write data
-    
-    
-    movlw   0x50
-    iorwf   output_upper, W
-    call    SPI_MasterTransmit	;transmit byte
-    
-    movf    output_lower, W
-    call    SPI_MasterTransmit	
-    
-    bsf	    PORTD, RD0		;set chip select to stop write
    
-inc_low   
+   bcf		PORTD, RD0		;clear RD0/chip select so can write data
+   
+   movlw   0x50
+   iorwf   output_upper, W
+   call    SPI_MasterTransmit	;transmit byte
+    
+   movf    output_lower, W
+   call    SPI_MasterTransmit	
+    
+   bsf	   PORTD, RD0		;set chip select to stop write
+   return
+   
+Increment   
    infsnz	storage_low, f	    ;increment number in lowest byte
    bra		inc_high	    ;if not zero it will return else increment next byte
    return

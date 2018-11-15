@@ -53,9 +53,21 @@ Store_Input_Setup	    ;setup of serial output
 Input_store
    bcf		PORTE, RE1  ;set cs pin low to active so can write
    
+   movlw	0x06
+   call		SPI_MasterTransmitInput
+   
+   bsf		PORTE, RE1 
+   
    call		ADC_Read
    movff	ADRESL,input_lower
    movff	ADRESH,input_upper
+   
+   bcf		PORTE, RE1
+   
+   movlw	0x06
+   call		SPI_MasterTransmitInput
+   
+   bsf		PORTE, RE1 
    
    movlw	0x02
    call		SPI_MasterTransmitInput
