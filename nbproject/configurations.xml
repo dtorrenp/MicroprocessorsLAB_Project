@@ -20,6 +20,9 @@
       <itemPath>pad.asm</itemPath>
       <itemPath>M_input.asm</itemPath>
       <itemPath>M_output.asm</itemPath>
+      <itemPath>add_two.asm</itemPath>
+      <itemPath>M_input_2.asm</itemPath>
+      <itemPath>M_output_2.asm</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

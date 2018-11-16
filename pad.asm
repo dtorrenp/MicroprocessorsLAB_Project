@@ -53,10 +53,21 @@ Pad_Check
     movlw   b'01110111'		    
     cpfseq  pad_final			
     bra	    check_if_out
+    
+    call    file_check_1
     call    Input_store
     movlw   0x01
     movwf   button_pressed
     return
+
+    movlw   b'01110111'		    
+    cpfseq  pad_final			
+    bra	    check_if_out
+    call    Input_store
+    movlw   0x01
+    movwf   button_pressed
+    return
+    
     
 check_if_out
     movlw   b'10110111'
@@ -67,6 +78,39 @@ check_if_out
     movlw   0x02
     movwf   button_pressed
     return
+    
+File_check_1
+    
+    movlw	0x03
+    cpfseq	storage_highest
+    bra		
+    movlw	0x00
+    movwf	storage_highest
+    
+    movlw	0x70
+    
+    movwf	storage_low
+    movlw	0xFF
+    movwf	storage_high
+
+    movwf	storage_highest
+    cpfseq
+    
+Reset_1_file    
+    movlw	0x01
+    movwf	storage_low
+    movlw	0x00
+    movwf	storage_high
+    movlw	0x00
+    movwf	storage_highest
+    
+Reset_2_file
+    movlw	0x70
+    movwf	storage_low
+    movlw	0xFF
+    movwf	storage_high
+    movlw	0x03
+    movwf	storage_highest
     
 PAD_delay_x4us			; delay given in chunks of 4 microsecond in W
     movwf	PAD_cnt_l	; now need to multiply by 16
