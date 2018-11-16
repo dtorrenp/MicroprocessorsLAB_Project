@@ -1,6 +1,6 @@
 #include p18f87k22.inc
     
-    global Pad_Setup, Pad_Read, sampling_delay, Pad_Check
+    global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
     extern  LCD_clear, Input_store
     extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
     extern  Output_Storage
@@ -31,20 +31,17 @@ Pad_Setup
 Pad_Read
     movlw   0x0F
     movwf   TRISJ, A
-    movlw   .10
+    movlw   .1
     call    PAD_delay_x4us
     movff   PORTJ, pad_row
     movlw   0xF0
     movwf   TRISJ, A
-    movlw   .10
+    movlw   .1
     call    PAD_delay_x4us
     movff   PORTJ, pad_column
     movf    pad_row,W
     iorwf   pad_column, W
     movwf   pad_final
-    movlw   0x00    
-    movwf   TRISF
-    movff   pad_final, PORTF
     return
     
 Pad_Check
@@ -90,9 +87,13 @@ PADlp1
     bc 	PADlp1			; carry, then loop again
     return			; carry reset so return
     
-sampling_delay
-    movlw      .31
+sampling_delay_input
+    movlw      .6
     call	PAD_delay_x4us
     return
     
+sampling_delay_output
+    movlw      .13
+    call	PAD_delay_x4us
+    return
     end
