@@ -5,7 +5,7 @@
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read, sampling_delay_input
 	
-	global	Input_store, Store_Input_Setup, Storage_Clear
+	global	Input_store, Store_Input_Setup, Storage_Clear1
 	global  storage_low,storage_high,storage_highest,first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest  
 	
 acs0	udata_acs   ; reserve data space in access ram
@@ -83,6 +83,7 @@ Input_store
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
+   call		File_check1
    return
   
 increment_file   
@@ -108,8 +109,24 @@ Wait_TransmitInput ; Wait for transmission to complete
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
     
+File_check1
+    movlw	0x00
+    cpfseq	storage_low
+    return
+    movlw	0xE8
+    cpfseq	storage_high
+    return
+    movlw	0x03
+    cpfseq	storage_highest
+    return
+    movlw	0x00
+    movwf	storage_highest
+    movwf	storage_high
+    movlw	0x01
+    movwf	storage_low
+    return
     
-Storage_Clear
+Storage_Clear1
    movlw	0x00
    movwf	storage_high
    movwf	storage_highest
@@ -146,13 +163,13 @@ Storage_Clear
    
    movlw	0x00
    cpfseq	storage_low
-   bra		Storage_Clear
+   bra		Storage_Clear1
    movlw	0xE8
    cpfseq	storage_high
-   bra		Storage_Clear
+   bra		Storage_Clear1
    movlw	0x03
    cpfseq	storage_highest
-   bra		Storage_Clear
+   bra		Storage_Clear1
    return
     
 _    

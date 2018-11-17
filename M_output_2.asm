@@ -7,7 +7,7 @@
 	
 	extern first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest 
 	
-	global	Serial_Output_Setup, MIC_straight_output, Output_Storage
+	global	Serial_Output2_Setup, Output_Storage2
 	
 acs0	udata_acs   ; reserve data space in access ram
 output_lower	    res 1   ; reserve one byte 
@@ -21,7 +21,7 @@ output_storage_highest	    res 1
 	
 MicOutput CODE                      ; let linker place main program
 
-Serial_Output_Setup	    ;setup of serial output
+Serial_Output2_Setup	    ;setup of serial output
     movlw   0x00
     movwf   TRISD
     movwf   TRISE
@@ -50,34 +50,6 @@ Serial_Output_Setup	    ;setup of serial output
     bcf TRISC, SDO1
     bcf TRISC, SCK1
     return 
-
-Storage_Output_setup
-    ;movff first_storage_highest,output_storage_highest
-    ;movff first_storage_high,output_storage_high
-    ;movff first_storage_low,output_storage_low
-    return
-    
-MIC_straight_output
-    call	ADC_Read
-    movff	ADRESL,output_lower
-    movff	ADRESH,output_upper
-    call	Serial_Output
-    return
-    
-Serial_Output
-   
-    
-    bcf	    PORTD, RD0		;clear RD0/chip select so can write data
-    
-    movlw   0x50
-    iorwf   output_upper, W
-    call    SPI_MasterTransmit	;transmit byte
-    
-    movf    output_lower, W
-    call    SPI_MasterTransmit	
-    
-    bsf	    PORTD, RD0		;set chip select to stop write
-    return
     
 SPI_MasterTransmit ; Start transmission of data (held in W)
     movwf SSP2BUF
@@ -96,7 +68,7 @@ Wait_TransmitStore ; Wait for transmission to complete
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
 
-Output_Storage     
+Output_Storage2   
    call		sampling_delay_output
    
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM

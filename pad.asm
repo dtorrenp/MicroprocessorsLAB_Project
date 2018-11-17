@@ -1,7 +1,7 @@
 #include p18f87k22.inc
     
     global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
-    extern  LCD_clear, Input_store, Storage_Clear
+    extern  LCD_clear, Input_store, Storage_Clear1
     extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
     extern  Output_Storage
     
@@ -73,7 +73,7 @@ check_if_clear
     cpfseq  pad_final
     return
     
-    call    Output_clear
+    call    Storage_Clear1
     return
     
     

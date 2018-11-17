@@ -5,13 +5,13 @@
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read, sampling_delay_input
 	
-	global	Input_store, Store_Input_Setup
-	global  storage_low,storage_high,storage_highest,first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest  
+	global	Input_store2, Store_Input_2_Setup
+	;global  in2_storage_low,in2_storage_high,in2_storage_highest,first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest  
 	
 acs0	udata_acs   ; reserve data space in access ram
-storage_low	    res 1
-storage_high	    res 1
-storage_highest	    res 1
+in2_storage_low	    res 1
+in2_storage_high	    res 1
+in2_storage_highest	    res 1
 input_lower	    res 1
 input_upper	    res 1 
 	    
@@ -29,19 +29,12 @@ Store_Input_2_Setup	    ;setup of serial output
     bsf		PORTA, RA4  ;set WP pin on, write protect on
     bsf		PORTC, RC2  ;set hold pin off so doesnt hold
     
-    
-    movlw	0x70
-    movwf	storage_low
-    movlw	0xFF
-    movwf	storage_high
-    movlw	0x03
-    movwf	storage_highest
-
-    movlw	0x00
-    movwf	first_storage_high
-    movwf	first_storage_highest
     movlw	0x01
-    movwf	first_storage_low
+    movwf	in2_storage_low
+    movlw	0xE8
+    movwf	in2_storage_high
+    movlw	0x03
+    movwf	in2_storage_highest
     
     bcf SSP1STAT, CKE	    
     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
@@ -52,7 +45,7 @@ Store_Input_2_Setup	    ;setup of serial output
     bcf TRISC, SCK1
     return
    
-Input_store
+Input_store2
    call		sampling_delay_input
    
    bcf		PORTE, RE1  ;set cs pin low to active so can write
@@ -70,11 +63,11 @@ Input_store
    
    movlw	0x02
    call		SPI_MasterTransmitInput
-   movf		storage_highest, W
+   movf		in2_storage_highest, W
    call		SPI_MasterTransmitInput
-   movf		storage_high, W
+   movf		in2_storage_high, W
    call		SPI_MasterTransmitInput
-   movf		storage_low, W
+   movf		in2_storage_low, W
    call		SPI_MasterTransmitInput
    
    movf		input_upper, W
@@ -85,20 +78,21 @@ Input_store
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
+   call		File_check2
    return
   
 increment_file   
-   infsnz	storage_low, f	    ;increment number in lowest byte
+   infsnz	in2_storage_low, f	    ;increment number in lowest byte
    bra		inc_high	    ;if not zero it will return else increment next byte
    return
    
 inc_high
-   infsnz	storage_high, f	    ;increment number in middle byte
+   infsnz	in2_storage_high, f	    ;increment number in middle byte
    bra		inc_highest	    ;if not zero it will return else increment next byte
    return
 
 inc_highest   
-   infsnz	storage_highest, f  ;increment number in highest byte and return
+   infsnz	in2_storage_highest, f  ;increment number in highest byte and return
    retlw	0xFF
    return
 
@@ -109,6 +103,23 @@ Wait_TransmitInput ; Wait for transmission to complete
     bra Wait_TransmitInput
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
-    
+
+File_check2
+    movlw	0x00
+    cpfseq	in2_storage_low
+    return
+    movlw	0xD0
+    cpfseq	in2_storage_high
+    return
+    movlw	0x07
+    cpfseq	in2_storage_highest
+    return
+    movlw	0x03
+    movwf	in2_storage_highest
+    movlw	0xE8
+    movwf	in2_storage_high
+    movlw	0x01
+    movwf	in2_storage_low
+    return
     
     end
