@@ -5,7 +5,7 @@
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read, sampling_delay_input
 	
-	global	Input_store, Store_Input_Setup
+	global	Input_store, Store_Input_Setup, Storage_Clear
 	global  storage_low,storage_high,storage_highest,first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest  
 	
 acs0	udata_acs   ; reserve data space in access ram
@@ -109,4 +109,51 @@ Wait_TransmitInput ; Wait for transmission to complete
     return
     
     
+Storage_Clear
+   movlw	0x00
+   movwf	storage_high
+   movwf	storage_highest
+   movlw	0x01
+   movwf	storage_low
+   
+   bcf		PORTE, RE1  ;set cs pin low to active so can write
+   
+   movlw	0x06
+   call		SPI_MasterTransmitInput
+   
+   bsf		PORTE, RE1 
+   
+   bcf		PORTE, RE1
+   
+   movlw	0x02
+   call		SPI_MasterTransmitInput
+   movf		storage_highest, W
+   call		SPI_MasterTransmitInput
+   movf		storage_high, W
+   call		SPI_MasterTransmitInput
+   movf		storage_low, W
+   call		SPI_MasterTransmitInput
+   
+   movlw	0x00
+   call		SPI_MasterTransmitInput
+   movlw	0x00
+   call		SPI_MasterTransmitInput
+   
+   bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
+   
+   call		increment_file	    ;have to increment file  number twice as two bytes written
+   call		increment_file
+   
+   movlw	0x00
+   cpfseq	storage_low
+   bra		Storage_Clear
+   movlw	0xE8
+   cpfseq	storage_high
+   bra		Storage_Clear
+   movlw	0x03
+   cpfseq	storage_highest
+   bra		Storage_Clear
+   return
+    
+_    
     end

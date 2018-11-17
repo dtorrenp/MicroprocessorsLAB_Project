@@ -65,8 +65,6 @@ MIC_straight_output
     return
     
 Serial_Output
-   
-    
     bcf	    PORTD, RD0		;clear RD0/chip select so can write data
     
     movlw   0x50
@@ -92,7 +90,7 @@ SPI_MasterTransmitStore ; Start transmission of data (held in W)
 Wait_TransmitStore ; Wait for transmission to complete
     btfss PIR1, SSP1IF
     bra Wait_TransmitStore
-    movf    SSP1BUF, W
+    movf    SSP1BUF, W	    ;moves read data into working register
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
 
@@ -135,6 +133,7 @@ Output_Storage
     
    movf    output_lower, W
    call    SPI_MasterTransmit	
+   
    bcf	   TRISC, RC4
    bsf	   PORTD, RD0		;set chip select to stop write
    return

@@ -1,7 +1,7 @@
 #include p18f87k22.inc
     
     global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
-    extern  LCD_clear, Input_store
+    extern  LCD_clear, Input_store, Storage_Clear
     extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
     extern  Output_Storage
     
@@ -49,16 +49,6 @@ Pad_Check
     movlw   b'11111111'		    
     cpfslt  pad_final
     return
-    
-    movlw   b'01110111'		    
-    cpfseq  pad_final			
-    bra	    check_if_out
-    
-    call    file_check_1
-    call    Input_store
-    movlw   0x01
-    movwf   button_pressed
-    return
 
     movlw   b'01110111'		    
     cpfseq  pad_final			
@@ -68,49 +58,24 @@ Pad_Check
     movwf   button_pressed
     return
     
-    
 check_if_out
     movlw   b'10110111'
     cpfseq  pad_final
-    return
+    bra	    check_if_clear
     
     call    Output_Storage
     movlw   0x02
     movwf   button_pressed
     return
     
-File_check_1
+check_if_clear
+    movlw   b'11101110'	    ;check if c pressed on keypad
+    cpfseq  pad_final
+    return
     
-    movlw	0x03
-    cpfseq	storage_highest
-    bra		
-    movlw	0x00
-    movwf	storage_highest
+    call    Output_clear
+    return
     
-    movlw	0x70
-    
-    movwf	storage_low
-    movlw	0xFF
-    movwf	storage_high
-
-    movwf	storage_highest
-    cpfseq
-    
-Reset_1_file    
-    movlw	0x01
-    movwf	storage_low
-    movlw	0x00
-    movwf	storage_high
-    movlw	0x00
-    movwf	storage_highest
-    
-Reset_2_file
-    movlw	0x70
-    movwf	storage_low
-    movlw	0xFF
-    movwf	storage_high
-    movlw	0x03
-    movwf	storage_highest
     
 PAD_delay_x4us			; delay given in chunks of 4 microsecond in W
     movwf	PAD_cnt_l	; now need to multiply by 16

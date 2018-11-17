@@ -23,6 +23,7 @@
       <itemPath>add_two.asm</itemPath>
       <itemPath>M_input_2.asm</itemPath>
       <itemPath>M_output_2.asm</itemPath>
+      <itemPath>storage1clear.asm</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
