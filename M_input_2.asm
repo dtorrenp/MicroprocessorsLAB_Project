@@ -5,7 +5,7 @@
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read, sampling_delay_input
 	
-	global	Input_store2, Store_Input_2_Setup
+	global	Input_store2, Store_Input_2_Setup,Storage_Clear2
 	;global  in2_storage_low,in2_storage_high,in2_storage_highest,first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest  
 	
 acs0	udata_acs   ; reserve data space in access ram
@@ -121,5 +121,53 @@ File_check2
     movlw	0x01
     movwf	in2_storage_low
     return
+   
+Storage_Clear2;THIS PROBABLY DOESNT WORK
+    movlw	0x03
+    movwf	in2_storage_highest
+    movlw	0xE8
+    movwf	in2_storage_high
+    movlw	0x01
+    movwf	in2_storage_low
+   
+   bcf		PORTE, RE1  ;set cs pin low to active so can write
+   
+   movlw	0x06
+   call		SPI_MasterTransmitInput
+   
+   bsf		PORTE, RE1 
+   
+   bcf		PORTE, RE1
+   
+   movlw	0x02
+   call		SPI_MasterTransmitInput
+   movf		in2_storage_highest, W
+   call		SPI_MasterTransmitInput
+   movf		in2_storage_high, W
+   call		SPI_MasterTransmitInput
+   movf		in2_storage_low, W
+   call		SPI_MasterTransmitInput
+   
+   movlw	0x00
+   call		SPI_MasterTransmitInput
+   movlw	0x00
+   call		SPI_MasterTransmitInput
+   
+   bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
+   
+   call		increment_file	    ;have to increment file  number twice as two bytes written
+   call		increment_file
+   
+   movlw	0xE0;WILL IT LOOP BACK AROUND?;NUMBERS CORRESPOND TO THE MAX FILE I THINK
+   cpfseq	in2_storage_low
+   bra		Storage_Clear1
+   movlw	0xFE
+   cpfseq	in2_storage_high
+   bra		Storage_Clear1
+   movlw	0x07
+   cpfseq	in2_storage_highest
+   bra		Storage_Clear1
+   return
+    
     
     end

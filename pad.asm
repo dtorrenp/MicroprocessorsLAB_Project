@@ -1,7 +1,7 @@
 #include p18f87k22.inc
     
     global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
-    extern  LCD_clear, Input_store, Storage_Clear1
+    extern  LCD_clear, Input_store, Storage_Clear1,Storage_Clear2
     extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
     extern  Output_Storage
     
@@ -61,19 +61,33 @@ Pad_Check
 check_if_out
     movlw   b'10110111'
     cpfseq  pad_final
-    bra	    check_if_clear
-    
+    bra	    check_if_add
     call    Output_Storage
     movlw   0x02
     movwf   button_pressed
     return
-    
-check_if_clear
-    movlw   b'11101110'	    ;check if c pressed on keypad
+
+check_if_add    
+    movlw   b'11101110'	    ;CHANGE NUMBER;check if A???? pressed on keypad
     cpfseq  pad_final
+    bra	    check_if_clear_1
+    call    Add_Main_loop
     return
     
+    
+check_if_clear_1
+    movlw   b'11101110'	    ;check if c pressed on keypad
+    cpfseq  pad_final
+    bra	    check_if_clear_2
+    
     call    Storage_Clear1
+    return
+    
+check_if_clear_2
+    movlw   b'11101110'	    ;CHANGE NUMBER
+    cpfseq  pad_final
+    return
+    call    Storage_Clear2
     return
     
     

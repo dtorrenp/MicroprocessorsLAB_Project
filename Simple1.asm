@@ -6,6 +6,7 @@
 	extern	Pad_Setup, Pad_Read, Pad_Check
 	extern	Input_store, Store_Input_Setup
 	extern	Serial_Output_Setup, MIC_straight_output
+	extern  Add_start
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable
@@ -34,6 +35,7 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	call	Pad_Setup	; setup keypad entry
 	call	Serial_Output_Setup ; setup the serial data tranfer for DAC
 	call	Store_Input_Setup;setup code to store mic input
+	call    Add_start       ;setup for adding clips 1 and 2
 	goto	start
 	
 	; ******* Main programme ****************************************
