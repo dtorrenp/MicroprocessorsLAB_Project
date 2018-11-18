@@ -29,6 +29,7 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
     <itemPath>README.md</itemPath>
+    <itemPath>echo.asm</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>.</Elem>
