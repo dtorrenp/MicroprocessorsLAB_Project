@@ -146,7 +146,7 @@ inc_highest
     
 File_Check1_Out
     movlw	0x01
-    cpfseq	output_storage_low
+    cpfsgt	output_storage_low
     return
     movlw	0xE8
     cpfseq	output_storage_high

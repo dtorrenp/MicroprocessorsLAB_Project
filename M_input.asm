@@ -109,7 +109,7 @@ Wait_TransmitInput ; Wait for transmission to complete
     
 File_check1
     movlw	0x01
-    cpfseq	storage_low
+    cpfsgt	storage_low
     return
     movlw	0xE8
     cpfseq	storage_high
@@ -125,8 +125,10 @@ File_check1
     return
     
 Storage_Clear1
+   call	fon
    call	clear1_setup
    call	clear_1
+   call	foff
    return
 
 clear1_setup
@@ -175,6 +177,12 @@ clear_1
    movlw	0x03
    cpfseq	storage_highest
    goto		clear_1
+   
+   movlw	0x00
+   movwf	storage_high
+   movwf	storage_highest
+   movlw	0x01
+   movwf	storage_low
    return
 
    

@@ -105,8 +105,10 @@ File_check2
     return
    
 Storage_Clear2
+   call	fon
    call	clear_2setup
    call	clear_2
+   call	foff
    return
    
 clear_2setup
@@ -156,6 +158,13 @@ clear_2
    movlw	0x07
    cpfseq	in2_storage_highest
    goto		clear_2
+   
+   movlw	0x03
+   movwf	in2_storage_highest
+   movlw	0xE8
+   movwf	in2_storage_high
+   movlw	0x02
+   movwf	in2_storage_low
    return
    
 fon
