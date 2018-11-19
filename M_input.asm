@@ -125,7 +125,7 @@ File_check1
     return
     
 Storage_Clear1
-   call	fon
+   ;call	fon
  
    bcf		PORTE, RE1  ;set cs pin low to active so can write
    
@@ -160,18 +160,37 @@ Storage_Clear1
    
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
+   call		Clear_Check1
+   
+   
    
    movlw	0x02
-   cpfseq	storage_low
-   bra		Storage_Clear1
+   cpfsgt	storage_low
+   goto		Storage_Clear1
    movlw	0xE8
+   
+   movff	storage_high,PORTF
+   
    cpfseq	storage_high
-   bra		Storage_Clear1
+   goto		Storage_Clear1
    movlw	0x03
    cpfseq	storage_highest
-   bra		Storage_Clear1
-   call		foff
+   goto		Storage_Clear1
+   ;call		foff
    return
-    
-_    
-    end
+ 
+Clear_Check1
+   movlw	0x02
+   cpfsgt	storage_low
+   return
+   movlw	0xE8
+   movff	storage_high,PORTF
+   
+   cpfseq	storage_high
+   return
+   movlw	0x03
+   cpfseq	storage_highest
+   bra		Clear_Check1
+   retlw	0xFF
+   
+   end

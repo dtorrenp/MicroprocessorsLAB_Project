@@ -1,6 +1,6 @@
 #include p18f87k22.inc
-	global Add_Start, Add_Main_loop
-	extern SPI_MasterTransmitStore,SPI_MasterTransmitInput
+	global Setup_add, Add_Main_loop
+	extern SPI_MasterTransmitStore,SPI_MasterTransmitInput, fon, foff
 acs0	udata_acs   ; reserve data space in access ram  
 					    
 storage_low_1				    res 1
@@ -20,11 +20,25 @@ input_lower_1				    res 1
 input_upper_1				    res 1
 				    
 MIC    code
-
-Add_Start
-    call Setup_add				;setup code, simply set starting filre register numbers
-
+    
+Setup_add;set starting position of file registers to read the FRAM from			    
+    movlw	0x00
+    movwf	storage_highest_1
+    movlw	0x00
+    movwf	storage_high_1
+    movlw	0x01
+    movwf	storage_low_1
+   
+    movlw	0x03
+    movwf	storage_highest_2
+    movlw	0xE8
+    movwf	storage_high_2
+    movlw	0x02
+    movwf	storage_low_2
+    return
+    
 Add_Main_loop 
+    call fon
     call Read_Setup				;reading from the FRAM setup
     call Read_out_1				;read from the first half of the FRAM
     call Read_out_2				;read from the second half of the FRAM, equivalent to a shift of 256KB
@@ -54,23 +68,10 @@ Add_Main_loop
     movlw	0x03
     cpfseq	storage_highest_1
     bra		Add_Main_loop
+    call	foff
     return
     
-Setup_add;set starting position of file registers to read the FRAM from			    
-    movlw	0x00
-    movwf	storage_highest_1
-    movlw	0x00
-    movwf	storage_high_1
-    movlw	0x01
-    movwf	storage_low_1
-   
-    movlw	0x03
-    movwf	storage_highest_2
-    movlw	0xE8
-    movwf	storage_high_2
-    movlw	0x02
-    movwf	storage_low_2
-    return
+
       
 Read_Setup;setup to read from the FRAM
     movlw   0x00

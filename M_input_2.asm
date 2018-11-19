@@ -2,7 +2,7 @@
 
     	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
-	extern	Pad_Setup, Pad_Read, sampling_delay_input
+	extern	Pad_Setup, Pad_Read, sampling_delay_input, SPI_MasterTransmitInput
 	
 	global	Input_store2, Store_Input_2_Setup,Storage_Clear2, fon, foff
 	
@@ -86,17 +86,9 @@ inc_highest_in2
    retlw	0xFF
    return
 
-SPI_MasterTransmitInput ; Start transmission of data (held in W)
-    movwf SSP1BUF
-Wait_TransmitInput ; Wait for transmission to complete
-    btfss PIR1, SSP1IF
-    bra Wait_TransmitInput
-    bcf PIR1, SSP1IF ; clear interrupt flag
-    return
-
 File_check2
-    movlw	0xFE
-    cpfseq	in2_storage_low
+    movlw	0xFC
+    cpfsgt	in2_storage_low
     return
     movlw	0xFF
     cpfseq	in2_storage_high
@@ -113,14 +105,8 @@ File_check2
     return
    
 Storage_Clear2
-    call	fon
-    movlw	0x03
-    movwf	in2_storage_highest
-    movlw	0xE8
-    movwf	in2_storage_high
-    movlw	0x02
-    movwf	in2_storage_low
-   
+   call	fon
+ 
    bcf		PORTE, RE1  ;set cs pin low to active so can write
    
    movlw	0x06
@@ -128,6 +114,13 @@ Storage_Clear2
    
    bsf		PORTE, RE1 
    
+    movlw	0x03
+    movwf	in2_storage_highest
+    movlw	0xE8
+    movwf	in2_storage_high
+    movlw	0x02
+    movwf	in2_storage_low
+    
    bcf		PORTE, RE1
    
    movlw	0x02
@@ -149,18 +142,18 @@ Storage_Clear2
    call		increment_file2	    ;have to increment file  number twice as two bytes written
    call		increment_file2
    
-   movlw	0xFE;WILL IT LOOP BACK AROUND?;NUMBERS CORRESPOND TO THE MAX FILE I THINK
-   cpfseq	in2_storage_low
-   bra		Storage_Clear2
+   movlw	0xFC;WILL IT LOOP BACK AROUND?;NUMBERS CORRESPOND TO THE MAX FILE I THINK
+   cpfsgt	in2_storage_low
+   goto		Storage_Clear2
    movlw	0xFF
    cpfseq	in2_storage_high
-   bra		Storage_Clear2
+   goto		Storage_Clear2
    movlw	0x07
    cpfseq	in2_storage_highest
-   bra		Storage_Clear2
+   goto		Storage_Clear2
    call		foff
    return
-
+   
 fon
    movlw	0xFF
    movwf	PORTF

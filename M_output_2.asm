@@ -102,10 +102,10 @@ inc_highest2
    return    
     
 File_Check2_Out
-    movlw	0x00
-    cpfseq	output_storage_low2
+    movlw	0xFC
+    cpfsgt	output_storage_low2
     return
-    movlw	0xD0
+    movlw	0xFF
     cpfseq	output_storage_high2
     return
     movlw	0x07

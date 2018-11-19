@@ -1,7 +1,7 @@
 #include p18f87k22.inc
     
     global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
-    extern  LCD_clear, Input_store, Storage_Clear1,Storage_Clear2
+    extern  LCD_clear, Input_store, Storage_Clear1,Storage_Clear2, Setup_add
     extern  Output_Storage1, Output_Storage2, Input_store2, Add_Main_loop
     
 acs0    udata_acs   ; named variables in access ram
@@ -79,6 +79,8 @@ check_if_clear1
     movlw   b'01111101'	    ;check if c pressed on keypad
     cpfseq  pad_final
     bra	    check_if_clear_2
+    movlw   0x05
+    movwf   PORTF
     call    Storage_Clear1
     return
     
@@ -93,6 +95,7 @@ check_if_add
     movlw   b'01111110'	    
     cpfseq  pad_final
     return
+    call    Setup_add
     call    Add_Main_loop
     return 
     
