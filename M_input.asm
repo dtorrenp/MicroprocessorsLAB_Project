@@ -2,7 +2,7 @@
 
     	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
-	extern	Pad_Setup, Pad_Read, sampling_delay_input
+	extern	Pad_Setup, Pad_Read, sampling_delay_input, fon, foff
 	
 	global	Input_store, Store_Input_Setup, Storage_Clear1,SPI_MasterTransmitInput
 	
@@ -125,18 +125,20 @@ File_check1
     return
     
 Storage_Clear1
-   movlw	0x00
-   movwf	storage_high
-   movwf	storage_highest
-   movlw	0x01
-   movwf	storage_low
-   
+   call	fon
+ 
    bcf		PORTE, RE1  ;set cs pin low to active so can write
    
    movlw	0x06
    call		SPI_MasterTransmitInput
    
    bsf		PORTE, RE1 
+   
+   movlw	0x00
+   movwf	storage_high
+   movwf	storage_highest
+   movlw	0x01
+   movwf	storage_low
    
    bcf		PORTE, RE1
    
@@ -159,7 +161,7 @@ Storage_Clear1
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
    
-   movlw	0x01
+   movlw	0x02
    cpfseq	storage_low
    bra		Storage_Clear1
    movlw	0xE8
@@ -168,6 +170,7 @@ Storage_Clear1
    movlw	0x03
    cpfseq	storage_highest
    bra		Storage_Clear1
+   call		foff
    return
     
 _    

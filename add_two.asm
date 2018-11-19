@@ -70,6 +70,7 @@ Setup_add;set starting position of file registers to read the FRAM from
     movwf	storage_high_2
     movlw	0x02
     movwf	storage_low_2
+    return
       
 Read_Setup;setup to read from the FRAM
     movlw   0x00

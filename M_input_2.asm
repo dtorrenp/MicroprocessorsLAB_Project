@@ -4,14 +4,14 @@
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read, sampling_delay_input
 	
-	global	Input_store2, Store_Input_2_Setup,Storage_Clear2 
+	global	Input_store2, Store_Input_2_Setup,Storage_Clear2, fon, foff
 	
 acs0	udata_acs   ; reserve data space in access ram
 in2_storage_low	    res 1
 in2_storage_high	    res 1
 in2_storage_highest	    res 1
-input_lower	    res 1
-input_upper	    res 1 
+input_lower2	    res 1
+input_upper2	    res 1 
 	    
 first_storage_low   res 1 	    
 first_storage_high	res 1     
@@ -23,9 +23,9 @@ last_storage_highest	res 1
 MIC    code
     
 Store_Input_2_Setup	    ;setup of serial output
-    bsf		PORTE, RE1  ;set cs pin high so cant write
-    bsf		PORTA, RA4  ;set WP pin on, write protect on
-    bsf		PORTC, RC2  ;set hold pin off so doesnt hold
+    movlw	0x00
+    movwf	TRISF
+    movwf	PORTF
     
     movlw	0x02
     movwf	in2_storage_low
@@ -33,14 +33,6 @@ Store_Input_2_Setup	    ;setup of serial output
     movwf	in2_storage_high
     movlw	0x03
     movwf	in2_storage_highest
-    
-    bcf SSP1STAT, CKE	    
-    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
-    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
-    movwf SSP1CON1
-    ; SDO2 output; SCK2 output
-    bcf TRISC, SDI1
-    bcf TRISC, SCK1
     return
    
 Input_store2
@@ -54,8 +46,8 @@ Input_store2
    bsf		PORTE, RE1 
    
    call		ADC_Read
-   movff	ADRESL,input_lower
-   movff	ADRESH,input_upper
+   movff	ADRESL,input_lower2
+   movff	ADRESH,input_upper2
    
    bcf		PORTE, RE1
    
@@ -68,28 +60,28 @@ Input_store2
    movf		in2_storage_low, W
    call		SPI_MasterTransmitInput
    
-   movf		input_upper, W
+   movf		input_upper2, W
    call		SPI_MasterTransmitInput
-   movf		input_lower, W
+   movf		input_lower2, W
    call		SPI_MasterTransmitInput
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
-   call		increment_file	    ;have to increment file  number twice as two bytes written
-   call		increment_file
+   call		increment_file2	    ;have to increment file  number twice as two bytes written
+   call		increment_file2
    call		File_check2
    return
   
-increment_file   
+increment_file2   
    infsnz	in2_storage_low, f	    ;increment number in lowest byte
-   bra		inc_high	    ;if not zero it will return else increment next byte
+   bra		inc_high_in2	    ;if not zero it will return else increment next byte
    return
    
-inc_high
+inc_high_in2
    infsnz	in2_storage_high, f	    ;increment number in middle byte
-   bra		inc_highest	    ;if not zero it will return else increment next byte
+   bra		inc_highest_in2	    ;if not zero it will return else increment next byte
    return
 
-inc_highest   
+inc_highest_in2   
    infsnz	in2_storage_highest, f  ;increment number in highest byte and return
    retlw	0xFF
    return
@@ -121,6 +113,7 @@ File_check2
     return
    
 Storage_Clear2
+    call	fon
     movlw	0x03
     movwf	in2_storage_highest
     movlw	0xE8
@@ -153,8 +146,8 @@ Storage_Clear2
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    
-   call		increment_file	    ;have to increment file  number twice as two bytes written
-   call		increment_file
+   call		increment_file2	    ;have to increment file  number twice as two bytes written
+   call		increment_file2
    
    movlw	0xFE;WILL IT LOOP BACK AROUND?;NUMBERS CORRESPOND TO THE MAX FILE I THINK
    cpfseq	in2_storage_low
@@ -165,7 +158,17 @@ Storage_Clear2
    movlw	0x07
    cpfseq	in2_storage_highest
    bra		Storage_Clear2
+   call		foff
    return
-    
+
+fon
+   movlw	0xFF
+   movwf	PORTF
+   return
+   
+foff
+   movlw	0x00
+   movwf	PORTF
+   return
     
     end

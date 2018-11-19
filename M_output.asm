@@ -23,6 +23,7 @@ Serial_Output_Setup	    ;setup of serial output
     movwf   TRISD
     movwf   TRISE
     movwf   TRISF
+    movwf   PORTF
     bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
     
     movlw	0x00
@@ -47,12 +48,6 @@ Serial_Output_Setup	    ;setup of serial output
     bcf TRISC, SDO1
     bcf TRISC, SCK1
     return 
-
-Storage_Output_setup
-    ;movff first_storage_highest,output_storage_highest
-    ;movff first_storage_high,output_storage_high
-    ;movff first_storage_low,output_storage_low
-    return
     
 MIC_straight_output
     call	ADC_Read
@@ -115,10 +110,9 @@ Output_Storage1
    call		SPI_MasterTransmitStore
    movwf	output_lower
    
-   movff	output_storage_high, PORTF
-   
    call		Increment
    call		Increment
+   call		File_Check1_Out
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    

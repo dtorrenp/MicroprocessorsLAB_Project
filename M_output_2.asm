@@ -8,46 +8,22 @@
 	global	Serial_Output2_Setup, Output_Storage2
 	
 acs0	udata_acs   ; reserve data space in access ram
-output_lower	    res 1   ; reserve one byte 
-output_upper	    res 1   ; reserve one byte	
-transmit_upper	    res 1
-transmit_lower	    res 1
-inbetween1	    res 1
-output_storage_low	    res 1
-output_storage_high	    res 1
-output_storage_highest	    res 1
+output_lower2	    res 1   ; reserve one byte 
+output_upper2	    res 1   ; reserve one byte
+output_storage_low2	    res 1
+output_storage_high2	    res 1
+output_storage_highest2	    res 1
 	
 MicOutput CODE                      ; let linker place main program
 
 Serial_Output2_Setup	    ;setup of serial output
-    movlw   0x00
-    movwf   TRISD
-    movwf   TRISE
-    movwf   TRISF
-    bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
     
     movlw	0xE8
-    movwf	output_storage_high
+    movwf	output_storage_high2
     movlw	0x03
-    movwf	output_storage_highest
+    movwf	output_storage_highest2
     movlw	0x02
-    movwf	output_storage_low
-    
-    bcf SSP2STAT, CKE	    
-    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
-    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
-    movwf SSP2CON1
-    ; SDO2 output; SCK2 output
-    bcf TRISD, SDO2
-    bcf TRISD, SCK2
-    
-    bcf SSP1STAT, CKE	    
-    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
-    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
-    movwf SSP1CON1
-    ; SDO2 output; SCK2 output
-    bcf TRISC, SDO1
-    bcf TRISC, SCK1
+    movwf	output_storage_low2
     return 
     
 SPI_MasterTransmit ; Start transmission of data (held in W)
@@ -76,72 +52,70 @@ Output_Storage2
    
    movlw	0x03	    ;op code for reading FRAM
    call		SPI_MasterTransmitStore
-   movf		output_storage_highest, W
+   movf		output_storage_highest2, W
    call		SPI_MasterTransmitStore
-   movf		output_storage_high, W
+   movf		output_storage_high2, W
    call		SPI_MasterTransmitStore
-   movf		output_storage_low, W
+   movf		output_storage_low2, W
    call		SPI_MasterTransmitStore
    
    movlw	0xFF
    call		SPI_MasterTransmitStore
    andlw	0x0F
-   movwf	output_upper
+   movwf	output_upper2
    movlw	0x00
    call		SPI_MasterTransmitStore
-   movwf	output_lower
-   
-   movff	output_storage_high, PORTF
+   movwf	output_lower2
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    
    bcf		PORTD, RD0		;clear RD0/chip select so can write data
    
    movlw   0x50
-   iorwf   output_upper, W
+   iorwf   output_upper2, W
    call    SPI_MasterTransmit	;transmit byte
     
-   movf    output_lower, W
+   movf    output_lower2, W
    call    SPI_MasterTransmit
    
-   call		Increment
-   call		Increment
+   call		Increment2
+   call		Increment2
    call		File_Check2_Out
    
    bcf	   TRISC, RC4
    bsf	   PORTD, RD0		;set chip select to stop write
    return
    
-Increment   
-   infsnz	output_storage_low, f	    ;increment number in lowest byte
-   bra		inc_high	    ;if not zero it will return else increment next byte
+Increment2
+   infsnz	output_storage_low2, f	    ;increment number in lowest byte
+   bra		inc_high2	    ;if not zero it will return else increment next byte
    return
    
-inc_high
-   infsnz	output_storage_high, f	    ;increment number in middle byte
-   bra		inc_highest	    ;if not zero it will return else increment next byte
+inc_high2
+   infsnz	output_storage_high2, f	    ;increment number in middle byte
+   bra		inc_highest2	    ;if not zero it will return else increment next byte
    return
 
-inc_highest   
-   infsnz	output_storage_highest, f  ;increment number in highest byte and return
+inc_highest2   
+   infsnz	output_storage_highest2, f  ;increment number in highest byte and return
    retlw	0xFF
    return    
     
 File_Check2_Out
     movlw	0x00
-    cpfseq	output_storage_low
+    cpfseq	output_storage_low2
     return
     movlw	0xD0
-    cpfseq	output_storage_high
+    cpfseq	output_storage_high2
     return
     movlw	0x07
-    cpfseq	output_storage_highest
+    cpfseq	output_storage_highest2
     return
     movlw	0x03
-    movwf	output_storage_highest
+    movwf	output_storage_highest2
     movlw	0x8E
-    movwf	output_storage_high
+    movwf	output_storage_high2
     movlw	0x02
-    movwf	output_storage_low
+    movwf	output_storage_low2
     return
     END

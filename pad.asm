@@ -13,7 +13,6 @@ PAD_counter res 1   ; reserve 1 byte for counting through nessage
 pad_row res 1
 pad_column res 1
 pad_final res 1
-button_pressed	res 1
 
 pad	    code
 
@@ -53,18 +52,13 @@ Pad_Check
     cpfseq  pad_final			
     bra	    check_if_out_1
     call    Input_store
-    movlw   0x01
-    movwf   button_pressed
     return
     
 check_if_out_1
     movlw   b'01111011'
     cpfseq  pad_final
     bra	    check_if_in_2
-    
     call    Output_Storage1
-    movlw   0x02
-    movwf   button_pressed
     return
     
 check_if_in_2
@@ -77,26 +71,26 @@ check_if_in_2
 check_if_out2
     movlw   b'10111011'
     cpfseq  pad_final
-    bra	    check_if_clear2
+    bra	    check_if_clear1
     call    Output_Storage2
     return
     
-check_if_clear2
+check_if_clear1
     movlw   b'01111101'	    ;check if c pressed on keypad
     cpfseq  pad_final
-    bra	    check_if_clear_1
-    call    Storage_Clear2
-    return
-    
-check_if_clear_1
-    movlw   b'10111101'	    ;check if c pressed on keypad
-    cpfseq  pad_final
-    bra	    check_if_add
+    bra	    check_if_clear_2
     call    Storage_Clear1
     return
     
+check_if_clear_2
+    movlw   b'10111101'	    ;check if c pressed on keypad
+    cpfseq  pad_final
+    bra	    check_if_add
+    call    Storage_Clear2
+    return
+    
 check_if_add    
-    movlw   b'01111110'	    ;CHANGE NUMBER;check if A???? pressed on keypad
+    movlw   b'01111110'	    
     cpfseq  pad_final
     return
     call    Add_Main_loop
