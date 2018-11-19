@@ -18,6 +18,7 @@ output_upper_2				    res 1
 
 input_lower_1				    res 1
 input_upper_1				    res 1
+imt				    res 1
 				    
 MIC    code
     
@@ -49,7 +50,9 @@ Add_Main_loop
     
     movf output_upper_1,W
     addwfc output_upper_2, W
-    movwf input_upper_1				;add upper byte with carry from lower byte addition
+    
+    ;rrcf input_upper_1,f
+    ;8rrcf input_lower_1,f  
     
     call Write_Setup				;setup to read
     call Write_result_1				;write the result back to the first half og the FRAM
