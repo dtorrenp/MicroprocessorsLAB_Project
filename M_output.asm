@@ -7,7 +7,7 @@
 	
 	extern first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest 
 	
-	global	Serial_Output_Setup, MIC_straight_output, Output_Storage
+	global	Serial_Output_Setup, MIC_straight_output, Output_Storage1
 	
 acs0	udata_acs   ; reserve data space in access ram
 output_lower	    res 1   ; reserve one byte 
@@ -94,7 +94,7 @@ Wait_TransmitStore ; Wait for transmission to complete
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
 
-Output_Storage     
+Output_Storage1
    call		sampling_delay_output
    
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
@@ -153,4 +153,21 @@ inc_highest
    retlw	0xFF
    return    
     
+File_Check1_Out
+    movlw	0x01
+    cpfseq	output_storage_low
+    return
+    movlw	0xE8
+    cpfseq	output_storage_high
+    return
+    movlw	0x03
+    cpfseq	output_storage_highest
+    return
+    movlw	0x00
+    movwf	output_storage_highest
+    movwf	output_storage_high
+    movlw	0x01
+    movwf	output_storage_low
+    return
+   
     END

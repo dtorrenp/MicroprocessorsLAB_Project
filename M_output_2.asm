@@ -28,10 +28,11 @@ Serial_Output2_Setup	    ;setup of serial output
     movwf   TRISF
     bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
     
-    movlw	0x00
+    movlw	0xE8
     movwf	output_storage_high
+    movlw	0x03
     movwf	output_storage_highest
-    movlw	0x01
+    movlw	0x02
     movwf	output_storage_low
     
     bcf SSP2STAT, CKE	    
@@ -94,9 +95,6 @@ Output_Storage2
    
    movff	output_storage_high, PORTF
    
-   call		Increment
-   call		Increment
-   
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    
    bcf		PORTD, RD0		;clear RD0/chip select so can write data
@@ -106,7 +104,12 @@ Output_Storage2
    call    SPI_MasterTransmit	;transmit byte
     
    movf    output_lower, W
-   call    SPI_MasterTransmit	
+   call    SPI_MasterTransmit
+   
+   call		Increment
+   call		Increment
+   call		File_Check2_Out
+   
    bcf	   TRISC, RC4
    bsf	   PORTD, RD0		;set chip select to stop write
    return
@@ -126,4 +129,21 @@ inc_highest
    retlw	0xFF
    return    
     
+File_Check2_Out
+    movlw	0x00
+    cpfseq	output_storage_low
+    return
+    movlw	0xD0
+    cpfseq	output_storage_high
+    return
+    movlw	0x07
+    cpfseq	output_storage_highest
+    return
+    movlw	0x03
+    movwf	output_storage_highest
+    movlw	0x8E
+    movwf	output_storage_high
+    movlw	0x02
+    movwf	output_storage_low
+    return
     END

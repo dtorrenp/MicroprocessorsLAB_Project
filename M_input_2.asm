@@ -29,7 +29,7 @@ Store_Input_2_Setup	    ;setup of serial output
     bsf		PORTA, RA4  ;set WP pin on, write protect on
     bsf		PORTC, RC2  ;set hold pin off so doesnt hold
     
-    movlw	0x01
+    movlw	0x02
     movwf	in2_storage_low
     movlw	0xE8
     movwf	in2_storage_high
@@ -105,10 +105,10 @@ Wait_TransmitInput ; Wait for transmission to complete
     return
 
 File_check2
-    movlw	0x00
+    movlw	0xFE
     cpfseq	in2_storage_low
     return
-    movlw	0xD0
+    movlw	0xFF
     cpfseq	in2_storage_high
     return
     movlw	0x07
@@ -118,16 +118,16 @@ File_check2
     movwf	in2_storage_highest
     movlw	0xE8
     movwf	in2_storage_high
-    movlw	0x01
+    movlw	0x02
     movwf	in2_storage_low
     return
    
-Storage_Clear2;THIS PROBABLY DOESNT WORK
+Storage_Clear2
     movlw	0x03
     movwf	in2_storage_highest
     movlw	0xE8
     movwf	in2_storage_high
-    movlw	0x01
+    movlw	0x02
     movwf	in2_storage_low
    
    bcf		PORTE, RE1  ;set cs pin low to active so can write
@@ -158,15 +158,15 @@ Storage_Clear2;THIS PROBABLY DOESNT WORK
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
    
-   movlw	0xE0;WILL IT LOOP BACK AROUND?;NUMBERS CORRESPOND TO THE MAX FILE I THINK
+   movlw	0xFE;WILL IT LOOP BACK AROUND?;NUMBERS CORRESPOND TO THE MAX FILE I THINK
    cpfseq	in2_storage_low
-   bra		Storage_Clear1
-   movlw	0xFE
+   bra		Storage_Clear2
+   movlw	0xFF
    cpfseq	in2_storage_high
-   bra		Storage_Clear1
+   bra		Storage_Clear2
    movlw	0x07
    cpfseq	in2_storage_highest
-   bra		Storage_Clear1
+   bra		Storage_Clear2
    return
     
     

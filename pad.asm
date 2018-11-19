@@ -3,7 +3,7 @@
     global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
     extern  LCD_clear, Input_store, Storage_Clear1,Storage_Clear2
     extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
-    extern  Output_Storage
+    extern  Output_Storage1, Output_Storage2, Input_store2, Add_Main_loop
     
 acs0    udata_acs   ; named variables in access ram
 PAD_cnt_l   res 1   ; reserve 1 byte for variable PAD_cnt_l
@@ -52,44 +52,56 @@ Pad_Check
 
     movlw   b'01110111'		    
     cpfseq  pad_final			
-    bra	    check_if_out
+    bra	    check_if_out_1
     call    Input_store
     movlw   0x01
     movwf   button_pressed
     return
     
-check_if_out
-    movlw   b'10110111'
+check_if_out_1
+    movlw   b'01111011'
     cpfseq  pad_final
-    bra	    check_if_add
-    call    Output_Storage
+    bra	    check_if_in_2
+    
+    call    Output_Storage1
     movlw   0x02
     movwf   button_pressed
     return
-
-check_if_add    
-    movlw   b'11101110'	    ;CHANGE NUMBER;check if A???? pressed on keypad
+    
+check_if_in_2
+    movlw   b'10110111'
+    cpfseq  pad_final
+    bra	    check_if_out2
+    call    Input_store2
+    return
+    
+check_if_out2
+    movlw   b'10111011'
+    cpfseq  pad_final
+    bra	    check_if_clear2
+    call    Output_Storage2
+    return
+    
+check_if_clear2
+    movlw   b'01111101'	    ;check if c pressed on keypad
     cpfseq  pad_final
     bra	    check_if_clear_1
-    call    Add_Main_loop
-    return
-    
-    
-check_if_clear_1
-    movlw   b'11101110'	    ;check if c pressed on keypad
-    cpfseq  pad_final
-    bra	    check_if_clear_2
-    
-    call    Storage_Clear1
-    return
-    
-check_if_clear_2
-    movlw   b'11101110'	    ;CHANGE NUMBER
-    cpfseq  pad_final
-    return
     call    Storage_Clear2
     return
     
+check_if_clear_1
+    movlw   b'10111101'	    ;check if c pressed on keypad
+    cpfseq  pad_final
+    bra	    check_if_add
+    call    Storage_Clear1
+    return
+    
+check_if_add    
+    movlw   b'01111110'	    ;CHANGE NUMBER;check if A???? pressed on keypad
+    cpfseq  pad_final
+    return
+    call    Add_Main_loop
+    return 
     
 PAD_delay_x4us			; delay given in chunks of 4 microsecond in W
     movwf	PAD_cnt_l	; now need to multiply by 16

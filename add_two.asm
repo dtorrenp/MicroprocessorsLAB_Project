@@ -5,6 +5,7 @@ acs0	udata_acs   ; reserve data space in access ram
 storage_low_1				    res 1
 storage_high_1				    res 1
 storage_highest_1			    res 1
+			    
 storage_low_2				    res 1
 storage_high_2				    res 1
 storage_highest_2			    res 1
@@ -27,10 +28,10 @@ Add_Main_loop
     call Read_out_1				;read from the first half of the FRAM
     call Read_out_2				;read from the second half of the FRAM, equivalent to a shift of 256KB
     
-    movff output_lower_1,W			;DO I NEED TO CLEAR THE CARRY FLAG???
+    movf output_lower_1,W			;DO I NEED TO CLEAR THE CARRY FLAG???
     addwf output_lower_2,input_lower_1		;add lower byte 
     
-    movff output_upper_1,W
+    movf output_upper_1,W
     addwfc output_upper_2,input_upper_1		;add upper byte with carry from lower byte addition
     
     call Write_Setup				;setup to read
@@ -41,7 +42,7 @@ Add_Main_loop
     call		Increment_2
     call		Increment_2
     
-    movlw	0x00				;check whether the first half register has reached 256KB, if so return
+    movlw	0x01				;check whether the first half register has reached 256KB, if so return
     cpfseq	storage_low_1
     bra		Add_Main_loop
     movlw	0xE8
@@ -64,7 +65,7 @@ Setup_add;set starting position of file registers to read the FRAM from
     movwf	storage_highest_2
     movlw	0xE8
     movwf	storage_high_2
-    movlw	0x01
+    movlw	0x02
     movwf	storage_low_2
       
 Read_Setup;setup to read from the FRAM

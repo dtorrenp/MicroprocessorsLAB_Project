@@ -110,7 +110,7 @@ Wait_TransmitInput ; Wait for transmission to complete
     return
     
 File_check1
-    movlw	0x00
+    movlw	0x01
     cpfseq	storage_low
     return
     movlw	0xE8
@@ -161,7 +161,7 @@ Storage_Clear1
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
    
-   movlw	0x00
+   movlw	0x01
    cpfseq	storage_low
    bra		Storage_Clear1
    movlw	0xE8
