@@ -1,12 +1,10 @@
 #include p18f87k22.inc
 
     	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
-	extern	UART_Setup, UART_Transmit_Message  ; external UART subroutines
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
 	extern	Pad_Setup, Pad_Read, sampling_delay_input
 	
-	global	Input_store2, Store_Input_2_Setup,Storage_Clear2
-	;global  in2_storage_low,in2_storage_high,in2_storage_highest,first_storage_low,first_storage_high,first_storage_highest,last_storage_low,last_storage_high,last_storage_highest  
+	global	Input_store2, Store_Input_2_Setup,Storage_Clear2 
 	
 acs0	udata_acs   ; reserve data space in access ram
 in2_storage_low	    res 1

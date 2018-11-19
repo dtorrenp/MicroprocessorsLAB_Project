@@ -21,6 +21,7 @@
       <itemPath>M_output.asm</itemPath>
       <itemPath>M_input_2.asm</itemPath>
       <itemPath>M_output_2.asm</itemPath>
+      <itemPath>add_two.asm</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -28,7 +29,6 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
     <itemPath>README.md</itemPath>
-    <itemPath>echo.asm</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>.</Elem>

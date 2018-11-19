@@ -1,5 +1,6 @@
 #include p18f87k22.inc
 	global Add_Start, Add_Main_loop
+	extern SPI_MasterTransmitStore,SPI_MasterTransmitInput
 acs0	udata_acs   ; reserve data space in access ram  
 					    
 storage_low_1				    res 1
@@ -29,10 +30,12 @@ Add_Main_loop
     call Read_out_2				;read from the second half of the FRAM, equivalent to a shift of 256KB
     
     movf output_lower_1,W			;DO I NEED TO CLEAR THE CARRY FLAG???
-    addwf output_lower_2,input_lower_1		;add lower byte 
+    addwf output_lower_2,W
+    movwf input_lower_1				;add lower byte 
     
     movf output_upper_1,W
-    addwfc output_upper_2,input_upper_1		;add upper byte with carry from lower byte addition
+    addwfc output_upper_2, W
+    movwf input_upper_1				;add upper byte with carry from lower byte addition
     
     call Write_Setup				;setup to read
     call Write_result_1				;write the result back to the first half og the FRAM

@@ -2,7 +2,6 @@
     
     global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
     extern  LCD_clear, Input_store, Storage_Clear1,Storage_Clear2
-    extern storage_low,storage_high,storage_highest,last_storage_low,last_storage_high,last_storage_highest
     extern  Output_Storage1, Output_Storage2, Input_store2, Add_Main_loop
     
 acs0    udata_acs   ; named variables in access ram
