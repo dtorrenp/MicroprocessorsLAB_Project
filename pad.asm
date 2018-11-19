@@ -79,8 +79,6 @@ check_if_clear1
     movlw   b'01111101'	    ;check if c pressed on keypad
     cpfseq  pad_final
     bra	    check_if_clear_2
-    movlw   0x05
-    movwf   PORTF
     call    Storage_Clear1
     return
     

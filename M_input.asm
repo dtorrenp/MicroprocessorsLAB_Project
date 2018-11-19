@@ -125,20 +125,25 @@ File_check1
     return
     
 Storage_Clear1
-   ;call	fon
- 
+   call	clear1_setup
+   call	clear_1
+   return
+
+clear1_setup
+   movlw	0x00
+   movwf	storage_high
+   movwf	storage_highest
+   movlw	0x01
+   movwf	storage_low
+   return
+   
+clear_1
    bcf		PORTE, RE1  ;set cs pin low to active so can write
    
    movlw	0x06
    call		SPI_MasterTransmitInput
    
    bsf		PORTE, RE1 
-   
-   movlw	0x00
-   movwf	storage_high
-   movwf	storage_highest
-   movlw	0x01
-   movwf	storage_low
    
    bcf		PORTE, RE1
    
@@ -160,37 +165,17 @@ Storage_Clear1
    
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
-   call		Clear_Check1
-   
-   
    
    movlw	0x02
    cpfsgt	storage_low
-   goto		Storage_Clear1
+   goto		clear_1
    movlw	0xE8
-   
-   movff	storage_high,PORTF
-   
    cpfseq	storage_high
-   goto		Storage_Clear1
+   goto		clear_1
    movlw	0x03
    cpfseq	storage_highest
-   goto		Storage_Clear1
-   ;call		foff
+   goto		clear_1
    return
- 
-Clear_Check1
-   movlw	0x02
-   cpfsgt	storage_low
-   return
-   movlw	0xE8
-   movff	storage_high,PORTF
-   
-   cpfseq	storage_high
-   return
-   movlw	0x03
-   cpfseq	storage_highest
-   bra		Clear_Check1
-   retlw	0xFF
+
    
    end
