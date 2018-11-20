@@ -27,11 +27,11 @@ Store_Input_2_Setup	    ;setup of serial output
     movwf	TRISF
     movwf	PORTF
     
-    movlw	0x02
+    movlw	0x00
     movwf	in2_storage_low
-    movlw	0xE8
+    movlw	0x00
     movwf	in2_storage_high
-    movlw	0x03
+    movlw	0x04
     movwf	in2_storage_highest
     return
    
@@ -87,7 +87,7 @@ inc_highest_in2
    return
 
 File_check2
-    movlw	0xFC
+    movlw	0xFD
     cpfsgt	in2_storage_low
     return
     movlw	0xFF
@@ -96,11 +96,11 @@ File_check2
     movlw	0x07
     cpfseq	in2_storage_highest
     return
-    movlw	0x03
+    movlw	0x04
     movwf	in2_storage_highest
-    movlw	0xE8
+    movlw	0x00
     movwf	in2_storage_high
-    movlw	0x02
+    movlw	0x00
     movwf	in2_storage_low
     return
    
@@ -112,11 +112,11 @@ Storage_Clear2
    return
    
 clear_2setup
-   movlw	0x03
+   movlw	0x04
    movwf	in2_storage_highest
-   movlw	0xE8
+   movlw	0x00
    movwf	in2_storage_high
-   movlw	0x02
+   movlw	0x00
    movwf	in2_storage_low
    return
     
@@ -149,7 +149,7 @@ clear_2
    call		increment_file2	    ;have to increment file  number twice as two bytes written
    call		increment_file2
    
-   movlw	0xFC
+   movlw	0xFD
    cpfsgt	in2_storage_low
    goto		clear_2
    movlw	0xFF
@@ -159,11 +159,11 @@ clear_2
    cpfseq	in2_storage_highest
    goto		clear_2
    
-   movlw	0x03
+   movlw	0x04
    movwf	in2_storage_highest
-   movlw	0xE8
+   movlw	0x00
    movwf	in2_storage_high
-   movlw	0x02
+   movlw	0x00
    movwf	in2_storage_low
    return
    

@@ -18,11 +18,11 @@ MicOutput CODE                      ; let linker place main program
 
 Serial_Output2_Setup	    ;setup of serial output
     
-    movlw	0xE8
+    movlw	0x00
     movwf	output_storage_high2
-    movlw	0x03
+    movlw	0x04
     movwf	output_storage_highest2
-    movlw	0x02
+    movlw	0x00
     movwf	output_storage_low2
     return 
     
@@ -102,7 +102,7 @@ inc_highest2
    return    
     
 File_Check2_Out
-    movlw	0xFC
+    movlw	0xFD
     cpfsgt	output_storage_low2
     return
     movlw	0xFF
@@ -111,11 +111,11 @@ File_Check2_Out
     movlw	0x07
     cpfseq	output_storage_highest2
     return
-    movlw	0x03
+    movlw	0x04
     movwf	output_storage_highest2
-    movlw	0x8E
+    movlw	0x00
     movwf	output_storage_high2
-    movlw	0x02
+    movlw	0x00
     movwf	output_storage_low2
     return
     END

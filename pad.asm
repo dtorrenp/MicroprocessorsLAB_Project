@@ -117,12 +117,12 @@ PADlp1
     return			; carry reset so return
     
 sampling_delay_input
-    movlw      .6
+    movlw      .4
     call	PAD_delay_x4us
     return
     
 sampling_delay_output
-    movlw      .13
+    movlw      .10
     call	PAD_delay_x4us
     return
     end

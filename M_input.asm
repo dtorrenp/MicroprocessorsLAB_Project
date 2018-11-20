@@ -50,7 +50,8 @@ Store_Input_Setup	    ;setup of serial output
    
 Input_store
    call		sampling_delay_input
-   
+   ;call		fon
+   ;call		foff
    bcf		PORTE, RE1  ;set cs pin low to active so can write
    
    movlw	0x06
@@ -108,10 +109,10 @@ Wait_TransmitInput ; Wait for transmission to complete
     return
     
 File_check1
-    movlw	0x01
+    movlw	0xFD
     cpfsgt	storage_low
     return
-    movlw	0xE8
+    movlw	0xFF
     cpfseq	storage_high
     return
     movlw	0x03
@@ -168,10 +169,10 @@ clear_1
    call		increment_file	    ;have to increment file  number twice as two bytes written
    call		increment_file
    
-   movlw	0x02
+   movlw	0xFD
    cpfsgt	storage_low
    goto		clear_1
-   movlw	0xE8
+   movlw	0xFF
    cpfseq	storage_high
    goto		clear_1
    movlw	0x03

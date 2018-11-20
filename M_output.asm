@@ -2,7 +2,7 @@
 
     	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
 	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
-	extern	Pad_Setup, Pad_Read, sampling_delay_output
+	extern	Pad_Setup, Pad_Read, sampling_delay_output, fon, foff
 	
 	global	Serial_Output_Setup, MIC_straight_output, Output_Storage1,SPI_MasterTransmitStore
 	
@@ -88,7 +88,8 @@ Wait_TransmitStore ; Wait for transmission to complete
 
 Output_Storage1
    call		sampling_delay_output
-   
+   ;call		fon
+   ;call		foff
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
    ;bcf		TRISC, RC5
    bsf		TRISC, RC4
@@ -145,10 +146,10 @@ inc_highest
    return    
     
 File_Check1_Out
-    movlw	0x01
+    movlw	0xFD
     cpfsgt	output_storage_low
     return
-    movlw	0xE8
+    movlw	0xFF
     cpfseq	output_storage_high
     return
     movlw	0x03

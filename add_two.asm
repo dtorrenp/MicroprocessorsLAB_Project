@@ -30,11 +30,11 @@ Setup_add;set starting position of file registers to read the FRAM from
     movlw	0x01
     movwf	storage_low_1
    
-    movlw	0x03
+    movlw	0x04
     movwf	storage_highest_2
-    movlw	0xE8
+    movlw	0x00
     movwf	storage_high_2
-    movlw	0x02
+    movlw	0x00
     movwf	storage_low_2
     return
     
@@ -50,9 +50,10 @@ Add_Main_loop
     
     movf output_upper_1,W
     addwfc output_upper_2, W
+    movwf   input_upper_1
     
-    ;rrcf input_upper_1,f
-    ;8rrcf input_lower_1,f  
+    rrcf input_upper_1,f
+    rrcf input_lower_1,f  
     
     call Write_Setup				;setup to read
     call Write_result_1				;write the result back to the first half og the FRAM
@@ -62,15 +63,18 @@ Add_Main_loop
     call		Increment_2
     call		Increment_2
     
-    movlw	0x01				;check whether the first half register has reached 256KB, if so return
-    cpfseq	storage_low_1
+    movlw	0xFD				;check whether the first half register has reached 256KB, if so return
+    cpfsgt	storage_low_1
     bra		Add_Main_loop
-    movlw	0xE8
+    movlw	0xFF
     cpfseq	storage_high_1
     bra		Add_Main_loop
     movlw	0x03
     cpfseq	storage_highest_1
     bra		Add_Main_loop
+    
+    call	Setup_add
+    
     call	foff
     return
     
@@ -123,7 +127,7 @@ Read_out_1;Read the value from the 1st clip
    movwf	output_lower_1
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
-   bcf	   TRISC, RC4
+   bcf		TRISC, RC4
    return
    
 Read_out_2;read from the second clip   
@@ -149,7 +153,7 @@ Read_out_2;read from the second clip
    movwf	output_lower_2
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
-   bcf	   TRISC, RC4
+   bcf		TRISC, RC4
    return
 
 Write_Setup;setup to write back to the FRAM
@@ -169,12 +173,11 @@ Write_Setup;setup to write back to the FRAM
 Write_result_1;write to the FRAM 1st half, the second half is left untouched
    bcf		PORTE, RE1  ;set cs pin low to active so can write
    
-   bcf		PORTE, RE1  ;set cs pin low to active so can write
-   
    movlw	0x06
    call		SPI_MasterTransmitInput
    
-   bsf		PORTE, RE1 
+   bsf		PORTE, RE1
+   
    bcf		PORTE, RE1
    
    movlw	0x02
