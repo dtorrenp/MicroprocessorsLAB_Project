@@ -49,7 +49,7 @@ Serial_Output_Setup	    ;setup of serial output
     bcf TRISC, SCK1
     return 
     
-MIC_straight_output
+MIC_straight_output		    ;subroutine for outputting signal immediately without storing
     call	ADC_Read
     movff	ADRESL,output_lower
     movff	ADRESH,output_upper
@@ -59,75 +59,72 @@ MIC_straight_output
 Serial_Output
     bcf	    PORTD, RD0		;clear RD0/chip select so can write data
     
-    movlw   0x50
-    iorwf   output_upper, W
-    call    SPI_MasterTransmit	;transmit byte
+    movlw   0x50		;sending DAC config bits, needed for DAC to work
+    iorwf   output_upper, W	;combining config bits with upper byte 
+    call    SPI_MasterTransmit	;transmit combined byte 
     
-    movf    output_lower, W
+    movf    output_lower, W	;sending lower byte of sound to DAC
     call    SPI_MasterTransmit	
     
     bsf	    PORTD, RD0		;set chip select to stop write
     return
     
-SPI_MasterTransmit ; Start transmission of data (held in W)
-    movwf SSP2BUF
+SPI_MasterTransmit ; Start transmission of data (held in W) through SPI2
+    movwf   SSP2BUF
 Wait_Transmit ; Wait for transmission to complete
-    btfss PIR2, SSP2IF
-    bra Wait_Transmit
-    bcf PIR2, SSP2IF ; clear interrupt flag
+    btfss   PIR2, SSP2IF
+    bra	    Wait_Transmit
+    bcf	    PIR2, SSP2IF ; clear interrupt flag
     return
     
-SPI_MasterTransmitStore ; Start transmission of data (held in W)
-    movwf SSP1BUF
+SPI_MasterTransmitStore ; Start serial transmission of data (held in W) into FRAM using SPI1
+    movwf   SSP1BUF
 Wait_TransmitStore ; Wait for transmission to complete
-    btfss PIR1, SSP1IF
-    bra Wait_TransmitStore
+    btfss   PIR1, SSP1IF
+    bra	    Wait_TransmitStore
     movf    SSP1BUF, W	    ;moves read data into working register
-    bcf PIR1, SSP1IF ; clear interrupt flag
+    bcf	    PIR1, SSP1IF ; clear interrupt flag
     return
 
-Output_Storage1
-   call		sampling_delay_output
-   ;call		fon
-   ;call		foff
+Output_Storage1				;subroutine for outputting sound bite 1
+   call		sampling_delay_output	;delay needed for correct 8Khz sampling rate out
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
-   ;bcf		TRISC, RC5
-   bsf		TRISC, RC4
+   bsf		TRISC, RC4		
    
-   movlw	0x03	    ;op code for reading FRAM
-   call		SPI_MasterTransmitStore
-   movf		output_storage_highest, W
+   movlw	0x03			;op code for reading FRAM sent to FRAM
+   call		SPI_MasterTransmitStore	
+   movf		output_storage_highest, W   ;sending file address  to be read from to FRAM
    call		SPI_MasterTransmitStore
    movf		output_storage_high, W
    call		SPI_MasterTransmitStore
    movf		output_storage_low, W
    call		SPI_MasterTransmitStore
    
-   movlw	0xFF
-   call		SPI_MasterTransmitStore
-   andlw	0x0F
-   movwf	output_upper
-   movlw	0x00
+   movlw	0xFF			;dummy byte ignored as data is read out into SSP1BUF
+   call		SPI_MasterTransmitStore	;clock needed to be sent for serial output
+   andlw	0x0F			;making sure upper 4 bits of upper byte are 0 so conifg bitsb are correct later
+   movwf	output_upper		
+   movlw	0x00			;dummy byte ignored as data is read out into SSP1BUF
    call		SPI_MasterTransmitStore
    movwf	output_lower
    
+   call		Increment	    ;increments file twice as two data bytes read
    call		Increment
-   call		Increment
-   call		File_Check1_Out
+   call		File_Check1_Out	    ;checks file address of outputted files so only allotted space is outputted
    
-   bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
+   bsf		PORTE, RE1	    ;set cs pin high to inactive so cant write
    
-   bcf		PORTD, RD0		;clear RD0/chip select so can write data
+   bcf		PORTD, RD0	    ;clear chip select so can write data
    
-   movlw   0x50
+   movlw   0x50			    ;adds config bits for DAC onto upper data byte
    iorwf   output_upper, W
-   call    SPI_MasterTransmit	;transmit byte
+   call    SPI_MasterTransmit	    ;transmit byte through SPI2 into external circuit
     
-   movf    output_lower, W
+   movf    output_lower, W	    ;transmits lower byte into external circuit
    call    SPI_MasterTransmit	
    
    bcf	   TRISC, RC4
-   bsf	   PORTD, RD0		;set chip select to stop write
+   bsf	   PORTD, RD0		    ;set chip select to stop write
    return
    
 Increment   
@@ -145,8 +142,8 @@ inc_highest
    retlw	0xFF
    return    
     
-File_Check1_Out
-    movlw	0xFD
+File_Check1_Out				;subroutine for checking if end of alloted memory is reached
+    movlw	0xFD	
     cpfsgt	output_storage_low
     return
     movlw	0xFF
@@ -155,7 +152,7 @@ File_Check1_Out
     movlw	0x03
     cpfseq	output_storage_highest
     return
-    movlw	0x00
+    movlw	0x00			;if reached then changes file address to start to loop around
     movwf	output_storage_highest
     movwf	output_storage_high
     movlw	0x01
