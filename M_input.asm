@@ -1,9 +1,7 @@
 #include p18f87k22.inc
 
-    	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
-	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
+    	extern	ADC_Setup, ADC_Read
 	extern	Pad_Setup, Pad_Read, sampling_delay_input, fon, foff
-	
 	global	Input_store, Store_Input_Setup, Storage_Clear1,SPI_MasterTransmitInput
 	
 acs0	udata_acs   ; reserve data space in access ram
@@ -11,14 +9,7 @@ storage_low	    res 1
 storage_high	    res 1
 storage_highest	    res 1
 input_lower	    res 1
-input_upper	    res 1 
-	    
-first_storage_low   res 1 	    
-first_storage_high	res 1     
-first_storage_highest	res 1     
-last_storage_low   res 1 	    
-last_storage_high	res 1     
-last_storage_highest	res 1  	    
+input_upper	    res 1	    
 
 MIC    code
     
@@ -32,12 +23,6 @@ Store_Input_Setup	    ;setup of serial output
     movwf	storage_highest
     movlw	0x01
     movwf	storage_low
-    
-    movlw	0x00
-    movwf	first_storage_high
-    movwf	first_storage_highest
-    movlw	0x01
-    movwf	first_storage_low
     
     bcf SSP1STAT, CKE	    
     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)

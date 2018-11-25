@@ -1,17 +1,13 @@
 #include p18f87k22.inc
 
-    	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
-	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
+    	extern	ADC_Setup, ADC_Read
 	extern	Pad_Setup, Pad_Read, sampling_delay_output, fon, foff
-	
 	global	Serial_Output_Setup, MIC_straight_output, Output_Storage1,SPI_MasterTransmitStore
 	
 acs0	udata_acs   ; reserve data space in access ram
 output_lower	    res 1   ; reserve one byte 
 output_upper	    res 1   ; reserve one byte	
-transmit_upper	    res 1
-transmit_lower	    res 1
-inbetween1	    res 1
+	    
 output_storage_low	    res 1
 output_storage_high	    res 1
 output_storage_highest	    res 1

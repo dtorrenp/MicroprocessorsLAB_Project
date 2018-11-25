@@ -14,7 +14,6 @@
                    projectFiles="true">
       <itemPath>Simple1.asm</itemPath>
       <itemPath>config.asm</itemPath>
-      <itemPath>LCD.asm</itemPath>
       <itemPath>ADC.asm</itemPath>
       <itemPath>pad.asm</itemPath>
       <itemPath>M_input.asm</itemPath>
@@ -47,7 +46,7 @@
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="PIC18F-K_DFP" vendor="Microchip" version="1.0.40"/>
+        <pack name="PIC18F-K_DFP" vendor="Microchip" version="1.0.41"/>
       </packs>
       <compileType>
         <linkerTool>

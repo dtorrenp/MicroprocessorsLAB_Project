@@ -1,7 +1,6 @@
 #include p18f87k22.inc
 
-    	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
-	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
+    	extern	ADC_Setup, ADC_Read
 	extern	Pad_Setup, Pad_Read, sampling_delay_input, SPI_MasterTransmitInput
 	
 	global	Input_store2, Store_Input_2_Setup,Storage_Clear2, fon, foff
@@ -11,14 +10,7 @@ in2_storage_low	    res 1
 in2_storage_high	    res 1
 in2_storage_highest	    res 1
 input_lower2	    res 1
-input_upper2	    res 1 
-	    
-first_storage_low   res 1 	    
-first_storage_high	res 1     
-first_storage_highest	res 1     
-last_storage_low   res 1 	    
-last_storage_high	res 1     
-last_storage_highest	res 1  	    
+input_upper2	    res 1  	    
 
 MIC    code
     

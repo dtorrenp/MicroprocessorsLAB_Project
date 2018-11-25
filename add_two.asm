@@ -18,7 +18,6 @@ output_upper_2				    res 1
 
 input_lower_1				    res 1
 input_upper_1				    res 1
-imt				    res 1
 				    
 MIC    code
     
