@@ -6,8 +6,6 @@
 	extern	Serial_Output_Setup, MIC_straight_output, Serial_Output2_Setup, Store_Input_2_Setup
 	extern  Setup_add
 	
-acs0	udata_acs   ; reserve data space in access ram
-	
 rst	code	0    ; reset vector
 	goto	setup
 	
