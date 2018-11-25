@@ -25,7 +25,7 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start 	;call	MIC_straight_output
-	call    Pad_Check
-	bra	start	    
+	call    Pad_Check;checks the state of the key pad
+	bra	start;if nothing is pressed or function has been executed loop back and check key pad again	    
 	
 	end

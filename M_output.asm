@@ -8,21 +8,21 @@ acs0	udata_acs   ; reserve data space in access ram
 output_lower	    res 1   ; reserve one byte 
 output_upper	    res 1   ; reserve one byte	
 	    
-output_storage_low	    res 1
+output_storage_low	    res 1;memory address used to keep track of location within FRAM
 output_storage_high	    res 1
 output_storage_highest	    res 1
 	
 MicOutput CODE                      ; let linker place main program
 
 Serial_Output_Setup	    ;setup of serial output
-    movlw   0x00
+    movlw   0x00; set PORTS D,E,F as outputs
     movwf   TRISD
     movwf   TRISE
     movwf   TRISF
     movwf   PORTF
     bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
     
-    movlw	0x00
+    movlw	0x00;set starting memory address
     movwf	output_storage_high
     movwf	output_storage_highest
     movlw	0x01
@@ -45,7 +45,7 @@ Serial_Output_Setup	    ;setup of serial output
     bcf TRISC, SCK1
     return 
     
-MIC_straight_output
+MIC_straight_output;outputs the input data immediatly, device acts like a speaker
     call	ADC_Read
     movff	ADRESL,output_lower
     movff	ADRESH,output_upper
@@ -55,7 +55,7 @@ MIC_straight_output
 Serial_Output
     bcf	    PORTD, RD0		;clear RD0/chip select so can write data
     
-    movlw   0x50
+    movlw   0x50;add config bits to the front of data as DAC required this format
     iorwf   output_upper, W
     call    SPI_MasterTransmit	;transmit byte
     
@@ -82,16 +82,15 @@ Wait_TransmitStore ; Wait for transmission to complete
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
 
-Output_Storage1
+Output_Storage1;output data read from first section of FRAM
    call		sampling_delay_output
    ;call		fon
    ;call		foff
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
-   ;bcf		TRISC, RC5
    bsf		TRISC, RC4
    
    movlw	0x03	    ;op code for reading FRAM
-   call		SPI_MasterTransmitStore
+   call		SPI_MasterTransmitStore;transmit address in FRAM to be read out, in three separate bytes
    movf		output_storage_highest, W
    call		SPI_MasterTransmitStore
    movf		output_storage_high, W
@@ -99,28 +98,28 @@ Output_Storage1
    movf		output_storage_low, W
    call		SPI_MasterTransmitStore
    
-   movlw	0xFF
+   movlw	0xFF;dummy data sent to FRAM, required in order to read out data
    call		SPI_MasterTransmitStore
    andlw	0x0F
-   movwf	output_upper
-   movlw	0x00
+   movwf	output_upper;move read value into variable
+   movlw	0x00;dummy data sent to FRAM, required in order to read out data
    call		SPI_MasterTransmitStore
-   movwf	output_lower
+   movwf	output_lower;move read value into variable
    
    call		Increment
    call		Increment
-   call		File_Check1_Out
+   call		File_Check1_Out;check whether upper limit of first half of FRAM has been reached
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    
    bcf		PORTD, RD0		;clear RD0/chip select so can write data
    
-   movlw   0x50
+   movlw   0x50;add config bits to the front of data as DAC required this format
    iorwf   output_upper, W
-   call    SPI_MasterTransmit	;transmit byte
+   call    SPI_MasterTransmit	;transmit upper byte
     
    movf    output_lower, W
-   call    SPI_MasterTransmit	
+   call    SPI_MasterTransmit;transmit lower byte	
    
    bcf	   TRISC, RC4
    bsf	   PORTD, RD0		;set chip select to stop write
@@ -141,7 +140,7 @@ inc_highest
    retlw	0xFF
    return    
     
-File_Check1_Out
+File_Check1_Out;check current memeory address variables against the upper limit of the first section of FRAM
     movlw	0xFD
     cpfsgt	output_storage_low
     return
@@ -151,7 +150,7 @@ File_Check1_Out
     movlw	0x03
     cpfseq	output_storage_highest
     return
-    movlw	0x00
+    movlw	0x00;if the limit has been hit, reset the memory address to start of first section, so audio continuosly output
     movwf	output_storage_highest
     movwf	output_storage_high
     movlw	0x01
