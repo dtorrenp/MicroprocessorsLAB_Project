@@ -5,20 +5,20 @@
 	global	Input_store, Store_Input_Setup, Storage_Clear1,SPI_MasterTransmitInput
 	
 acs0	udata_acs   ; reserve data space in access ram
-storage_low	    res 1;memory address low byte
-storage_high	    res 1;memory address high byte
-storage_highest	    res 1;memory address highest byte
-input_lower	    res 1;lower byte to input to storage
-input_upper	    res 1;upper byte to input to storage	    
+storage_low	    res 1   ;memory address low byte
+storage_high	    res 1   ;memory address high byte
+storage_highest	    res 1   ;memory address highest byte
+input_lower	    res 1   ;lower byte to input to storage
+input_upper	    res 1   ;upper byte to input to storage	    
 
 MIC    code
     
-Store_Input_Setup	    ;setup of serial output
+Store_Input_Setup	    ;setup of serial output to write to FRAM
     bsf		PORTE, RE1  ;set cs pin high so cant write
     bsf		PORTA, RA4  ;set WP pin on, write protect on
     bsf		PORTC, RC2  ;set hold pin off so doesnt hold
 	
-    movlw	0x00;set the initla memory address to 0x000001
+    movlw	0x00	    ;set the inital memory address to 0x000001
     movwf	storage_high
     movwf	storage_highest
     movlw	0x01
@@ -33,18 +33,18 @@ Store_Input_Setup	    ;setup of serial output
     bcf TRISC, SCK1
     return
    
-Input_store;stores the input data read in from the ADC
+Input_store			    ;stores the input data read in from the ADC
    call		sampling_delay_input;delay previously calculted such that the total time of the input code is 1/8000 seconds
-   bcf		PORTE, RE1  ;set cs pin low to active so can write
+   bcf		PORTE, RE1	    ;set cs pin low to active so can write
    
    movlw	0x06			;sending opcode to set WREN pin
    call		SPI_MasterTransmitInput
    
    bsf		PORTE, RE1		;set cs pin high to seperate two write cycles
    
-   call		ADC_Read		;reads in data from mic input
-   movff	ADRESL,input_lower	;transfers input from special file register
-   movff	ADRESH,input_upper	;into dedicated file locations
+   call		ADC_Read		;calls ADC to read in data from mic input
+   movff	ADRESL,input_lower	;transfers input from special file register into dedicated file locations
+   movff	ADRESH,input_upper	
    
    bcf		PORTE, RE1		;setting cs pin low again to write
    
@@ -91,17 +91,17 @@ Wait_TransmitInput		    ;Wait for transmission to complete
     bcf PIR1, SSP1IF		    ;clear interrupt flag
     return
     
-File_check1			    ;subroutine for making program writing to 
-    movlw	0xFD		    ;only allotted memory 
-    cpfsgt	storage_low	    ;as file increments twice each time just checks if 
-    return			    ;greater than instead of equal to
+File_check1			    ;subroutine for making program writing to only allotted memory as file 
+    movlw	0xFD		    ;increments twice each time just checks if greater than instead of equal to
+    cpfsgt	storage_low	    
+    return			    
     movlw	0xFF
     cpfseq	storage_high
     return
     movlw	0x03
     cpfseq	storage_highest
     return
-    movlw	0x00		;if the top of the section has been reached reset the memory address again such that it can be looped over again
+    movlw	0x00		;if one of the last addresses of the section has been reached reset the memory address again such that it can be looped over again
     movwf	storage_highest
     movwf	storage_high
     movlw	0x01

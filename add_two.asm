@@ -70,9 +70,6 @@ Add_Main_loop
     movlw	0x03
     cpfseq	storage_highest_1
     bra		Add_Main_loop
-    
-    call	Setup_add
-    
     return
     
 

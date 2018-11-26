@@ -7,8 +7,8 @@
 	
 acs0	udata_acs   ; reserve data space in access ram
 in2_storage_low	    res 1
-in2_storage_high	    res 1
-in2_storage_highest	    res 1
+in2_storage_high    res 1
+in2_storage_highest res 1
 input_lower2	    res 1
 input_upper2	    res 1  	    
 

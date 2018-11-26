@@ -8,14 +8,14 @@ acs0    udata_acs   ; named variables in access ram
 PAD_cnt_l   res 1   ; reserve 1 byte for variable PAD_cnt_l
 PAD_cnt_h   res 1   ; reserve 1 byte for variable PAD_cnt_h
 PAD_cnt_ms  res 1   ; reserve 1 byte for ms counter
-pad_row res 1
+pad_row res 1	    ;reserving bytes to store keypad input
 pad_column res 1
 pad_final res 1
 
 pad	    code
 
 Pad_Setup
-    banksel PADCFG1
+    banksel PADCFG1		
     bsf	    PADCFG1, RJPU, BANKED
     clrf    LATJ
     movlw   0x0F
@@ -25,7 +25,7 @@ Pad_Setup
     return
 
 Pad_Read
-    movlw   0x0F
+    movlw   0x0F		    
     movwf   TRISJ, A
     movlw   .1
     call    PAD_delay_x4us
@@ -41,59 +41,59 @@ Pad_Read
     return
     
 Pad_Check
-    call    Pad_Read
-    movlw   b'11111111'		    
-    cpfslt  pad_final
+    call    Pad_Read		;reads keypad input
+    movlw   b'11111111'		;checks if any button is pressed, if not returns
+    cpfslt  pad_final	    
     return
 
-    movlw   b'01110111'		    
+    movlw   b'01110111'		;checks if button '1' is pressed    
     cpfseq  pad_final			
-    bra	    check_if_out_1
-    call    Input_store
+    bra	    check_if_out_1	;if not then moves to next check
+    call    Input_store		;if it is then the input signal is stored first half of FRAM
     return
     
-check_if_out_1
+check_if_out_1			;checks if button '4' is pressed  
     movlw   b'01111011'
     cpfseq  pad_final
-    bra	    check_if_in_2
-    call    Output_Storage1
+    bra	    check_if_in_2	;if not then moves to next check
+    call    Output_Storage1	;if it is then the 1st sound bite is played
     return
     
-check_if_in_2
+check_if_in_2			;checks if button '2' is pressed 
     movlw   b'10110111'
-    cpfseq  pad_final
-    bra	    check_if_out2
-    call    Input_store2
+    cpfseq  pad_final	
+    bra	    check_if_out2	;if not then moves to next check
+    call    Input_store2	;if it is then the input signal is stored into latter half of FRAM
     return
     
-check_if_out2
+check_if_out2			;checks if button '5' is pressed 
     movlw   b'10111011'
     cpfseq  pad_final
-    bra	    check_if_clear1
-    call    Output_Storage2
+    bra	    check_if_clear1	;if not then moves to next check
+    call    Output_Storage2	;if it is then the 2nd sound bite is played
     return
     
 check_if_clear1
-    movlw   b'01111101'	    ;check if c pressed on keypad
+    movlw   b'01111101'		;checks if button '7' is pressed 
     cpfseq  pad_final
-    bra	    check_if_clear_2
-    call    Storage_Clear1
+    bra	    check_if_clear_2	;if not then moves to next check
+    call    Storage_Clear1	;if it is then the 1st sound bite is cleared
     return
     
 check_if_clear_2
-    movlw   b'10111101'	    ;check if c pressed on keypad
+    movlw   b'10111101'		;checks if button '8' is pressed 
     cpfseq  pad_final
-    bra	    check_if_add
-    call    Storage_Clear2
+    bra	    check_if_add	;if not then moves to next check
+    call    Storage_Clear2	;if it is then the 2nd sound bite is cleared
     return
     
-check_if_add    
-    movlw   b'01111110'	    
+check_if_add			;checks if button 'A' is pressed 
+    movlw   b'01111110'		;if not then returns
     cpfseq  pad_final
     return
-    call    Setup_add
-    call    Add_Main_loop
-    return 
+    call    Setup_add		;if it is then the sound bites addressed are reset and the two bites are added
+    call    Add_Main_loop	
+    return		
     
 PAD_delay_x4us			; delay given in chunks of 4 microsecond in W
     movwf	PAD_cnt_l	; now need to multiply by 16

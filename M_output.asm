@@ -14,15 +14,15 @@ output_storage_highest	    res 1
 	
 MicOutput CODE                      ; let linker place main program
 
-Serial_Output_Setup	    ;setup of serial output
-    movlw   0x00; set PORTS D,E,F as outputs
+Serial_Output_Setup		    ;setup of serial output
+    movlw   0x00		    ;set PORTS D,E,F as outputs
     movwf   TRISD
     movwf   TRISE
     movwf   TRISF
     movwf   PORTF
-    bsf	    PORTD, RD0	    ;setting bit for chip select of DAC
+    bsf	    PORTD, RD0		    ;setting bit for chip select of DAC
     
-    movlw	0x00;set starting memory address
+    movlw	0x00		    ;set starting memory address
     movwf	output_storage_high
     movwf	output_storage_highest
     movlw	0x01
@@ -65,27 +65,27 @@ Serial_Output
     bsf	    PORTD, RD0		;set chip select to stop write
     return
     
-SPI_MasterTransmit ; Start transmission of data (held in W) through SPI2
+SPI_MasterTransmit		;Start transmission of data (held in W) through SPI2
     movwf   SSP2BUF
-Wait_Transmit ; Wait for transmission to complete
+Wait_Transmit			;Wait for transmission to complete
     btfss   PIR2, SSP2IF
     bra	    Wait_Transmit
-    bcf	    PIR2, SSP2IF ; clear interrupt flag
+    bcf	    PIR2, SSP2IF	;clear interrupt flag
     return
     
-SPI_MasterTransmitStore ; Start serial transmission of data (held in W) into FRAM using SPI1
+SPI_MasterTransmitStore		;Start serial transmission of data (held in W) into FRAM using SPI1
     movwf   SSP1BUF
-Wait_TransmitStore ; Wait for transmission to complete
+Wait_TransmitStore		;Wait for transmission to complete
     btfss   PIR1, SSP1IF
     bra	    Wait_TransmitStore
-    movf    SSP1BUF, W	    ;moves read data into working register
-    bcf	    PIR1, SSP1IF ; clear interrupt flag
+    movf    SSP1BUF, W		;moves read data into working register
+    bcf	    PIR1, SSP1IF	;clear interrupt flag
     return
 
 Output_Storage1				;subroutine for outputting sound bite 1
    call		sampling_delay_output	;delay needed for correct 8Khz sampling rate out
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
-   bsf		TRISC, RC4		
+   bsf		TRISC, RC4		;set MISO pin high as an input
    
    movlw	0x03			;op code for reading FRAM sent to FRAM
    call		SPI_MasterTransmitStore	
@@ -98,11 +98,11 @@ Output_Storage1				;subroutine for outputting sound bite 1
    
    movlw	0xFF			;dummy byte ignored as data is read out into SSP1BUF
    call		SPI_MasterTransmitStore	;clock needed to be sent for serial output
-   andlw	0x0F			;making sure upper 4 bits of upper byte are 0 so conifg bitsb are correct later
-   movwf	output_upper		
+   andlw	0x0F			;making sure upper 4 bits of upper byte are 0 so conifg bits are correct later
+   movwf	output_upper		;move read value into variable
    movlw	0x00			;dummy byte ignored as data is read out into SSP1BUF
    call		SPI_MasterTransmitStore
-   movwf	output_lower;move read value into variable
+   movwf	output_lower		;move read value into variable
    
    call		Increment	    ;increments file twice as two data bytes read
    call		Increment
@@ -119,22 +119,22 @@ Output_Storage1				;subroutine for outputting sound bite 1
    movf    output_lower, W	    ;transmits lower byte into external circuit
    call    SPI_MasterTransmit	
    
-   bcf	   TRISC, RC4
+   bcf	   TRISC, RC4		    ;clears MISO bit to an output
    bsf	   PORTD, RD0		    ;set chip select to stop write
    return
    
 Increment   
    infsnz	output_storage_low, f	    ;increment number in lowest byte
-   bra		inc_high	    ;if not zero it will return else increment next byte
+   bra		inc_high		    ;if not zero it will return else increment next byte
    return
    
 inc_high
    infsnz	output_storage_high, f	    ;increment number in middle byte
-   bra		inc_highest	    ;if not zero it will return else increment next byte
+   bra		inc_highest		    ;if not zero it will return else increment next byte
    return
 
 inc_highest   
-   infsnz	output_storage_highest, f  ;increment number in highest byte and return
+   infsnz	output_storage_highest, f   ;increment number in highest byte and return
    retlw	0xFF
    return    
     
