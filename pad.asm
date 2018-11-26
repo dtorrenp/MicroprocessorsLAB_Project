@@ -1,15 +1,13 @@
 #include p18f87k22.inc
     
     global Pad_Setup, Pad_Read, sampling_delay_input, Pad_Check,sampling_delay_output
-    extern  LCD_clear, Input_store, Storage_Clear1,Storage_Clear2, Setup_add
+    extern Input_store, Storage_Clear1,Storage_Clear2, Setup_add
     extern  Output_Storage1, Output_Storage2, Input_store2, Add_Main_loop
     
 acs0    udata_acs   ; named variables in access ram
 PAD_cnt_l   res 1   ; reserve 1 byte for variable PAD_cnt_l
 PAD_cnt_h   res 1   ; reserve 1 byte for variable PAD_cnt_h
 PAD_cnt_ms  res 1   ; reserve 1 byte for ms counter
-PAD_tmp	    res 1   ; reserve 1 byte for temporary use
-PAD_counter res 1   ; reserve 1 byte for counting through nessage
 pad_row res 1
 pad_column res 1
 pad_final res 1

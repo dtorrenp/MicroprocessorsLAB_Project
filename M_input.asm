@@ -1,24 +1,15 @@
 #include p18f87k22.inc
 
-    	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
-	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
+    	extern	ADC_Setup, ADC_Read
 	extern	Pad_Setup, Pad_Read, sampling_delay_input, fon, foff
-	
 	global	Input_store, Store_Input_Setup, Storage_Clear1,SPI_MasterTransmitInput
 	
 acs0	udata_acs   ; reserve data space in access ram
-storage_low	    res 1	
-storage_high	    res 1
-storage_highest	    res 1
-input_lower	    res 1
-input_upper	    res 1 
-	    
-first_storage_low   res 1 	    
-first_storage_high	res 1     
-first_storage_highest	res 1     
-last_storage_low   res 1 	    
-last_storage_high	res 1     
-last_storage_highest	res 1  	    
+storage_low	    res 1;memory address low byte
+storage_high	    res 1;memory address high byte
+storage_highest	    res 1;memory address highest byte
+input_lower	    res 1;lower byte to input to storage
+input_upper	    res 1;upper byte to input to storage	    
 
 MIC    code
     
@@ -27,8 +18,8 @@ Store_Input_Setup	    ;setup of serial output
     bsf		PORTA, RA4  ;set WP pin on, write protect on
     bsf		PORTC, RC2  ;set hold pin off so doesnt hold
 	
-    movlw	0x00		    ;setting initial memory location for 1st 
-    movwf	storage_high	    ;sound bite
+    movlw	0x00;set the initla memory address to 0x000001
+    movwf	storage_high
     movwf	storage_highest
     movlw	0x01
     movwf	storage_low
@@ -42,9 +33,9 @@ Store_Input_Setup	    ;setup of serial output
     bcf TRISC, SCK1
     return
    
-Input_store
-   call		sampling_delay_input	;calls delay to get 8Khz sampling rate
-   bcf		PORTE, RE1		;set cs pin low to active so can write
+Input_store;stores the input data read in from the ADC
+   call		sampling_delay_input;delay previously calculted such that the total time of the input code is 1/8000 seconds
+   bcf		PORTE, RE1  ;set cs pin low to active so can write
    
    movlw	0x06			;sending opcode to set WREN pin
    call		SPI_MasterTransmitInput
@@ -61,9 +52,9 @@ Input_store
    call		SPI_MasterTransmitInput	;sent through SPI1
    movf		storage_highest, W	;sending 6 byte address, msb first
    call		SPI_MasterTransmitInput
-   movf		storage_high, W
+   movf		storage_high, W		;transmit high byte of address
    call		SPI_MasterTransmitInput
-   movf		storage_low, W
+   movf		storage_low, W		;transmit low byte of address
    call		SPI_MasterTransmitInput
    
    movf		input_upper, W		;sending data to be stored at file address into FRAM
@@ -71,10 +62,10 @@ Input_store
    movf		input_lower, W		;sending second byte
    call		SPI_MasterTransmitInput	;file address increments automatically as cs pin still low
    
-   bsf		PORTE, RE1	    ;set cs pin high to inactive so cant write
-   call		increment_file	    ;have to increment file  number twice as two bytes written
+   bsf		PORTE, RE1		;set cs pin high to inactive so cant write
+   call		increment_file		;have to increment file  number twice as two bytes written
    call		increment_file
-   call		File_check1	    ;checks file address hasnt reach end of allotted space
+   call		File_check1		;check whether the end of the first section of FRAM memory has been reached
    return
   
 increment_file   
@@ -92,12 +83,12 @@ inc_highest
    retlw	0xFF		    ;highest byte maximum is 0x03 so need not worry about higher
    return
 
-SPI_MasterTransmitInput ; Start transmission of data (held in W)
+SPI_MasterTransmitInput		    ;Start transmission of data (held in W)
     movwf SSP1BUF
-Wait_TransmitInput ; Wait for transmission to complete
+Wait_TransmitInput		    ;Wait for transmission to complete
     btfss PIR1, SSP1IF
     bra Wait_TransmitInput
-    bcf PIR1, SSP1IF ; clear interrupt flag
+    bcf PIR1, SSP1IF		    ;clear interrupt flag
     return
     
 File_check1			    ;subroutine for making program writing to 
@@ -110,7 +101,7 @@ File_check1			    ;subroutine for making program writing to
     movlw	0x03
     cpfseq	storage_highest
     return
-    movlw	0x00		    ;if at end of allotted memory loops back to 0
+    movlw	0x00		;if the top of the section has been reached reset the memory address again such that it can be looped over again
     movwf	storage_highest
     movwf	storage_high
     movlw	0x01
@@ -132,13 +123,13 @@ clear1_setup			;setting file address to start of first bite
    movwf	storage_low
    return
    
-clear_1
-   bcf		PORTE, RE1  ;set cs pin low to active so can write
+clear_1					;clear the first section of FRAM 
+   bcf		PORTE, RE1		;set cs pin low to active so can write
    
    movlw	0x06			;sending opcode to set WREN pin
    call		SPI_MasterTransmitInput
    
-   bsf		PORTE, RE1	;set cs pin high to seperate two write cycles
+   bsf		PORTE, RE1		;set cs pin high to seperate two write cycles
    
    bcf		PORTE, RE1
    
@@ -156,22 +147,22 @@ clear_1
    movlw	0x00
    call		SPI_MasterTransmitInput
    
-   bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
+   bsf		PORTE, RE1		;set cs pin high to inactive so cant write
    
-   call		increment_file	    ;have to increment file number twice as two bytes written
+   call		increment_file		;have to increment file number twice as two bytes written
    call		increment_file
    
-   movlw	0xFD		    ;checking if end of allotted memory reached
+   movlw	0xFD			;compare current memory address against upper limit of the first section of the FRAM 
    cpfsgt	storage_low
    goto		clear_1
    movlw	0xFF
    cpfseq	storage_high
    goto		clear_1
    movlw	0x03
-   cpfseq	storage_highest	    ;once its reached the end of allotted memory it stops looping 
+   cpfseq	storage_highest		;once its reached the end of allotted memory it stops looping 
    goto		clear_1
     
-   movlw	0x00		    ;moves file address back to start for next write
+   movlw	0x00			;moves file address back to start for next write
    movwf	storage_high
    movwf	storage_highest
    movlw	0x01

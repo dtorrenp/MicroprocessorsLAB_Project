@@ -1,16 +1,13 @@
 #include p18f87k22.inc
 
-    	extern	LCD_Write_Hex, ADC_Setup, ADC_Read, add_check_setup, eight_bit_by_sixteen,sixteen_bit_by_sixteen,eight_bit_by_twentyfour, ADC_convert		    ; external ADC routines
-	extern  LCD_Setup, LCD_Write_Message, LCD_clear, LCD_move,LCD_delay_ms,LCD_Send_Byte_D,LCD_shiftright,LCD_delay_x4us	; external LCD subroutines
+    	extern	ADC_Setup, ADC_Read
 	extern	Pad_Setup, Pad_Read, sampling_delay_output
-	
-	
 	global	Serial_Output2_Setup, Output_Storage2
 	
-acs0	udata_acs   ; reserve data space in access ram
+acs0 udata_acs   ; reserve data space in access ram
 output_lower2	    res 1   ; reserve one byte 
 output_upper2	    res 1   ; reserve one byte
-output_storage_low2	    res 1
+output_storage_low2	    res 1;memory address used to keep track of location within FRAM
 output_storage_high2	    res 1
 output_storage_highest2	    res 1
 	
@@ -18,7 +15,7 @@ MicOutput CODE                      ; let linker place main program
 
 Serial_Output2_Setup	    ;setup of serial output
     
-    movlw	0x00
+    movlw	0x00;set starting memory address
     movwf	output_storage_high2
     movlw	0x04
     movwf	output_storage_highest2
@@ -43,15 +40,14 @@ Wait_TransmitStore ; Wait for transmission to complete
     bcf PIR1, SSP1IF ; clear interrupt flag
     return
 
-Output_Storage2   
+Output_Storage2;output data read from second section of FRAM
    call		sampling_delay_output
    
    bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
-   ;bcf		TRISC, RC5
    bsf		TRISC, RC4
    
    movlw	0x03	    ;op code for reading FRAM
-   call		SPI_MasterTransmitStore
+   call		SPI_MasterTransmitStore;transmit address in FRAM to be read out, in three separate bytes
    movf		output_storage_highest2, W
    call		SPI_MasterTransmitStore
    movf		output_storage_high2, W
@@ -59,24 +55,24 @@ Output_Storage2
    movf		output_storage_low2, W
    call		SPI_MasterTransmitStore
    
-   movlw	0xFF
+   movlw	0xFF;dummy data sent to FRAM, required in order to read out data
    call		SPI_MasterTransmitStore
    andlw	0x0F
-   movwf	output_upper2
-   movlw	0x00
+   movwf	output_upper2;move read value into variable
+   movlw	0x00;dummy data sent to FRAM, required in order to read out data
    call		SPI_MasterTransmitStore
-   movwf	output_lower2
+   movwf	output_lower2;move read value into variable
    
    bsf		PORTE, RE1  ;set cs pin high to inactive so cant write
    
    bcf		PORTD, RD0		;clear RD0/chip select so can write data
    
    movlw   0x50
-   iorwf   output_upper2, W
-   call    SPI_MasterTransmit	;transmit byte
+   iorwf   output_upper2, W ;add config bits to the front of data as DAC required this format
+   call    SPI_MasterTransmit	;transmit upper byte
     
    movf    output_lower2, W
-   call    SPI_MasterTransmit
+   call    SPI_MasterTransmit;transmit lower byte
    
    call		Increment2
    call		Increment2
@@ -101,7 +97,7 @@ inc_highest2
    retlw	0xFF
    return    
     
-File_Check2_Out
+File_Check2_Out;check current memeory address variables against the upper limit of the second section of FRAM
     movlw	0xFD
     cpfsgt	output_storage_low2
     return
@@ -111,7 +107,7 @@ File_Check2_Out
     movlw	0x07
     cpfseq	output_storage_highest2
     return
-    movlw	0x04
+    movlw	0x04;if the limit has been hit, reset the memory address to start of second section, so audio continuosly output
     movwf	output_storage_highest2
     movlw	0x00
     movwf	output_storage_high2

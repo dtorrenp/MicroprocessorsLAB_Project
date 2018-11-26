@@ -6,15 +6,12 @@
 	extern	Serial_Output_Setup, MIC_straight_output, Serial_Output2_Setup, Store_Input_2_Setup
 	extern  Setup_add
 	
-acs0	udata_acs   ; reserve data space in access ram
-	
 rst	code	0    ; reset vector
 	goto	setup
 	
 main	code
-	; ******* Programme FLASH read Setup Code ***********************
-setup	bcf	EECON1, CFGS	; point to Flash program memory  
-	bsf	EECON1, EEPGD 	; access Flash program memory
+	
+setup	
 	call	ADC_Setup	; setup ADC 
 	call	Pad_Setup	; setup keypad entry
 	call	Serial_Output_Setup ; setup the serial data tranfer for DAC
@@ -25,9 +22,7 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start 	;call	MIC_straight_output
-	;call	Storage_Clear1
-	;call	Storage_Clear2
-	call    Pad_Check
-	bra	start	    
+	call    Pad_Check	;checks the state of the key pad
+	bra	start		;loop back and check key pad again	    
 	
 	end
