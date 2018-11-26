@@ -13,7 +13,7 @@ input_upper	    res 1   ;upper byte to input to storage
 
 MIC    code
     
-Store_Input_Setup	    ;setup of serial output to write to FRAM
+Store_Input_Setup	    ;setup of serial output to write to 1st section of FRAM
     bsf		PORTE, RE1  ;set cs pin high so cant write
     bsf		PORTA, RA4  ;set WP pin on, write protect on
     bsf		PORTC, RC2  ;set hold pin off so doesnt hold
@@ -92,7 +92,7 @@ Wait_TransmitInput		    ;Wait for transmission to complete
     return
     
 File_check1			    ;subroutine for making program writing to only allotted memory as file 
-    movlw	0xFD		    ;increments twice each time just checks if greater than instead of equal to
+    movlw	0xFD		    ;increments twice each time so just checks if greater than instead of equal to
     cpfsgt	storage_low	    
     return			    
     movlw	0xFF
@@ -153,7 +153,7 @@ clear_1					;clear the first section of FRAM
    call		increment_file
    
    movlw	0xFD			;compare current memory address against upper limit of the first section of the FRAM 
-   cpfsgt	storage_low
+   cpfsgt	storage_low		;increments twice each time so just checks if greater than instead of equal to
    goto		clear_1
    movlw	0xFF
    cpfseq	storage_high
