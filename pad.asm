@@ -15,29 +15,29 @@ pad_final res 1
 pad	    code
 
 Pad_Setup
-    banksel PADCFG1		
+    banksel PADCFG1		    ;setting pullup resistors, sets pins as high
     bsf	    PADCFG1, RJPU, BANKED
-    clrf    LATJ
+    clrf    LATJ		    ;clears latch J for keypad input
     movlw   0x0F
-    movwf   TRISJ, A
+    movwf   TRISJ, A		    ;sets initial TRIS of PORTJ for input
     movlw   .10
-    call    PAD_delay_x4us
+    call    PAD_delay_x4us	    ;delay to allow voltage to settle
     return
 
 Pad_Read
-    movlw   0x0F		    
+    movlw   0x0F		    ;sets rows as inputs
     movwf   TRISJ, A
     movlw   .1
     call    PAD_delay_x4us
-    movff   PORTJ, pad_row
+    movff   PORTJ, pad_row	    ;copies value of row read to variable
     movlw   0xF0
-    movwf   TRISJ, A
+    movwf   TRISJ, A		    ;sets columns as inputs
     movlw   .1
     call    PAD_delay_x4us
-    movff   PORTJ, pad_column
+    movff   PORTJ, pad_column	    ;copies value of column read to variable
     movf    pad_row,W
-    iorwf   pad_column, W
-    movwf   pad_final
+    iorwf   pad_column, W	    ;combines column and row value for total input
+    movwf   pad_final		    ; moves value to own variable for comparison
     return
     
 Pad_Check
@@ -114,12 +114,12 @@ PADlp1
     bc 	PADlp1			; carry, then loop again
     return			; carry reset so return
     
-sampling_delay_input
+sampling_delay_input		;setting delays used for sampling input to get 8KHz rate
     movlw      .4
-    call	PAD_delay_x4us
+    call	PAD_delay_x4us	;using already defined subroutine to help
     return
-    
-sampling_delay_output
+	    
+sampling_delay_output		;setting delays used for sampling output to get 8KHz rate
     movlw      .10
     call	PAD_delay_x4us
     return
