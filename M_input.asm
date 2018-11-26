@@ -33,12 +33,6 @@ Store_Input_Setup	    ;setup of serial output
     movlw	0x01
     movwf	storage_low
     
-    movlw	0x00
-    movwf	first_storage_high
-    movwf	first_storage_highest
-    movlw	0x01
-    movwf	first_storage_low
-    
     bcf SSP1STAT, CKE	    
     ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
     movlw (1<<SSPEN)|(1<<CKP)|(0x02)
