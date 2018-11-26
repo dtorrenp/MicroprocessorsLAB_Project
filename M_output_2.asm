@@ -43,8 +43,8 @@ Wait_TransmitStore ; Wait for transmission to complete
 Output_Storage2;output data read from second section of FRAM
    call		sampling_delay_output
    
-   bcf		PORTE, RE1		;set cs pin low to active so can read from FRAM
-   bsf		TRISC, RC4
+   bcf		PORTE, RE1	;set cs pin low to active so can read from FRAM
+   bsf		TRISC, RC4	;set MISO pin high as an input
    
    movlw	0x03	    ;op code for reading FRAM
    call		SPI_MasterTransmitStore;transmit address in FRAM to be read out, in three separate bytes
@@ -78,7 +78,7 @@ Output_Storage2;output data read from second section of FRAM
    call		Increment2
    call		File_Check2_Out
    
-   bcf	   TRISC, RC4
+   bcf	   TRISC, RC4		;clears MISO bit to an output
    bsf	   PORTD, RD0		;set chip select to stop write
    return
    
